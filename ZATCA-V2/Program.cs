@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using ZATCA_V2.Data;
 using ZATCA_V2.Repositories;
 using ZATCA_V2.Repositories.Interfaces;
+using ZATCA_V2.ZATCA;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,7 @@ builder.Services.AddDbContext<DataContext>(options =>
 
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<ICompanyCredentialsRepository, CompanyCredentialsRepository>();
+builder.Services.AddScoped<IExternalApiService, ExternalApiService>();
 
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

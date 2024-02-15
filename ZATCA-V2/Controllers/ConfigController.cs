@@ -6,6 +6,7 @@ using ZATCA_V2.Helpers;
 using ZATCA_V2.Models;
 using ZATCA_V2.Repositories;
 using ZATCA_V2.Repositories.Interfaces;
+using ZATCA_V2.ZATCA;
 
 namespace ZATCA_V2.Controllers
 {
@@ -16,14 +17,19 @@ namespace ZATCA_V2.Controllers
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ICompanyRepository _companyRepository;
         private readonly ICompanyCredentialsRepository _companyCredentialsRepository;
+        private readonly IExternalApiService _externalApiService;
 
 
         public ConfigController(IHttpClientFactory httpClientFactory, ICompanyRepository companyRepository,
-            ICompanyCredentialsRepository companyCredentialsRepository)
+            ICompanyCredentialsRepository companyCredentialsRepository
+            , IExternalApiService externalApiService)
+
         {
             _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
-            _companyRepository = companyRepository;
-            _companyCredentialsRepository = companyCredentialsRepository;
+            _companyRepository = companyRepository ?? throw new ArgumentNullException(nameof(companyRepository));
+            _companyCredentialsRepository = companyCredentialsRepository ??
+                                            throw new ArgumentNullException(nameof(companyCredentialsRepository));
+            _externalApiService = externalApiService ?? throw new ArgumentNullException(nameof(externalApiService));
         }
 
         [HttpPost("generateCSR/{companyId}")]
@@ -128,59 +134,40 @@ namespace ZATCA_V2.Controllers
             var keyData = Helper.ReadFromFile(filteredPrivateKeyPath);
             try
             {
-                using (var client = _httpClientFactory.CreateClient())
+                var response = await _externalApiService.CallComplianceCSR(csrData);
+
+                var jsonResponse = JsonDocument.Parse(response).RootElement;
+
+                var binarySecurityToken = jsonResponse.GetProperty("binarySecurityToken").GetString();
+                var secret = jsonResponse.GetProperty("secret").GetString();
+
+                string decodedCertificate = Helper.DecodeFromBase64(binarySecurityToken);
+
+                var companyCredentials = new CompanyCredentials
                 {
-                    var request = new HttpRequestMessage(HttpMethod.Post,
-                        "https://gw-fatoora.zatca.gov.sa/e-invoicing/developer-portal/compliance");
+                    Certificate = decodedCertificate,
+                    CSR = csrData,
+                    Secret = secret,
+                    SecretToken = binarySecurityToken,
+                    PrivateKey = keyData,
+                };
 
-                    request.Headers.Add("accept", "application/json");
-                    request.Headers.Add("OTP", "123345");
-                    request.Headers.Add("Accept-Version", "V2");
+                company.CompanyCredentials.Add(companyCredentials);
 
-                    // Set the CSR data in the request content
-                    request.Content =
-                        new StringContent($"{{ \"csr\": \"{csrData}\" }}", Encoding.UTF8, "application/json");
+                await _companyCredentialsRepository.Create(companyCredentials); 
 
-                    // Send the request and await the response
-                    var response = await client.SendAsync(request);
+                await _companyRepository.Update(company); 
 
-                    // Ensure a successful status code
-                    response.EnsureSuccessStatusCode();
-
-                    // Read the response content
-                    var responseBody = await response.Content.ReadAsStringAsync();
-
-                    var jsonResponse = JsonDocument.Parse(responseBody).RootElement;
-
-                    // Extract binarySecurityToken
-                    var binarySecurityToken = jsonResponse.GetProperty("binarySecurityToken").GetString();
-                    var secret = jsonResponse.GetProperty("secret").GetString();
-
-                    //X509 Certificate
-                    string decodedCertificate = Helper.DecodeFromBase64(binarySecurityToken);
-
-                    var companyCredentials = new CompanyCredentials
-                    {
-                        Certificate = decodedCertificate,
-                        CSR = csrData,
-                        Secret = secret,
-                        SecretToken = binarySecurityToken,
-                        PrivateKey= keyData,
-                    };
-                    company.CompanyCredentials = companyCredentials;
-                    await _companyCredentialsRepository.Create(companyCredentials);
-
-                    return Ok(new
-                    {
-                        MainRes = jsonResponse,
-                        DecodedCertificate = decodedCertificate,
-                    });
-                }
+                return Ok(new
+                {
+                    MainRes = jsonResponse,
+                    DecodedCertificate = decodedCertificate,
+                });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { Error = $"An error occurred: {ex.Message}", InnerException = ex.InnerException?.Message });
-
+                return BadRequest(new
+                    { Error = $"An error occurred: {ex.Message}", InnerException = ex.InnerException?.Message });
             }
         }
 

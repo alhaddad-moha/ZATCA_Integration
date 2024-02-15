@@ -15,6 +15,6 @@ namespace ZATCA_V2.Models
         public string LocationAddress { get; set; }
         public string IndustryBusinessCategory { get; set; }
 
-        public CompanyCredentials? CompanyCredentials { get; set; } // Make it nullable with the '?' symbol
+        public ICollection<CompanyCredentials>? CompanyCredentials { get; set; }
     }
 }

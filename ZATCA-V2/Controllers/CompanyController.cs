@@ -6,6 +6,7 @@ using ZATCA_V2.Repositories.Interfaces;
 
 namespace ZATCA_V2.Controllers
 {
+    
     [ApiController]
     [Route("api/companies")]
     public class CompanyController : ControllerBase
