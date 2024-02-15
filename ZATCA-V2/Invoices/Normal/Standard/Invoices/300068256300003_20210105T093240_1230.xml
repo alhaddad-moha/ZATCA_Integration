@@ -2,7 +2,7 @@
 <Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2">
   <cbc:ProfileID>reporting:1.0</cbc:ProfileID>
   <cbc:ID>1230</cbc:ID>
-  <cbc:UUID>1ebc94a5-f1f9-48f4-80a1-326a742e7474</cbc:UUID>
+  <cbc:UUID>772638f5-aa0a-41ac-b1fa-dfe1c56b843d</cbc:UUID>
   <cbc:IssueDate>2021-01-05</cbc:IssueDate>
   <cbc:IssueTime>09:32:40</cbc:IssueTime>
   <cbc:InvoiceTypeCode name="0100000">388</cbc:InvoiceTypeCode>
@@ -43,7 +43,7 @@
         </cac:TaxScheme>
       </cac:PartyTaxScheme>
       <cac:PartyLegalEntity>
-        <cbc:RegistrationName>Amr Sobhy CO</cbc:RegistrationName>
+        <cbc:RegistrationName>Alhaddad</cbc:RegistrationName>
       </cac:PartyLegalEntity>
     </cac:Party>
   </cac:AccountingSupplierParty>

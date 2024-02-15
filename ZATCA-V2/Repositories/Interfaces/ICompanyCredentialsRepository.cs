@@ -9,5 +9,7 @@ namespace ZATCA_V2.Repositories.Interfaces
         Task Create(CompanyCredentials company);
         Task Update(CompanyCredentials company);
         Task Delete(int id);
+
+        Task<CompanyCredentials?> GetLatestByCompanyId(int companyId);
     }
 }

@@ -48,5 +48,13 @@ namespace ZATCA_V2.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<CompanyCredentials?> GetLatestByCompanyId(int companyId)
+        {
+            return await _context.CompanyCredentials
+                .Where(cc => cc.CompanyId == companyId)
+                .OrderByDescending(cc => cc.CreatedAt)
+                .FirstOrDefaultAsync();
+        }
     }
 }
