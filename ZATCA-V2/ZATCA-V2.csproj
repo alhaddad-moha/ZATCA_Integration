@@ -1,0 +1,72 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>ZATCA_V2</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.27" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.27">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.27" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.27" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.27">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Credentials\ConfigFiles\" />
+    <Folder Include="Credentials\CSR\" />
+    <Folder Include="Credentials\Keys\" />
+    <Folder Include="Invoices\Normal\Simplified\Credit\" />
+    <Folder Include="Invoices\Normal\Simplified\Debit\" />
+    <Folder Include="Invoices\Normal\Standard\Credit\" />
+    <Folder Include="Invoices\Normal\Standard\Debit\" />
+    <Folder Include="Invoices\Signed\Simplified\Credit\" />
+    <Folder Include="Invoices\Signed\Simplified\Debit\" />
+    <Folder Include="Invoices\Signed\Standard\Credit\" />
+    <Folder Include="Invoices\Signed\Standard\Debit\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="BouncyCastle.Crypto">
+      <HintPath>..\..\..\..\Downloads\Compressed\ZatcaIntegration_CSharp_TrailVersion_2\ZatcaIntegration\ZatcaIntegration\bin\Debug\BouncyCastle.Crypto.dll</HintPath>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.Core">
+      <HintPath>..\..\..\..\Downloads\Compressed\ZatcaIntegration_CSharp_TrailVersion_2\ZatcaIntegration\ZatcaIntegration\bin\Debug\IKVM.OpenJDK.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.Text">
+      <HintPath>..\..\..\..\Downloads\Compressed\ZatcaIntegration_CSharp_TrailVersion_2\ZatcaIntegration\ZatcaIntegration\bin\Debug\IKVM.OpenJDK.Text.dll</HintPath>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.Util">
+      <HintPath>..\..\..\..\Downloads\Compressed\ZatcaIntegration_CSharp_TrailVersion_2\ZatcaIntegration\ZatcaIntegration\bin\Debug\IKVM.OpenJDK.Util.dll</HintPath>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.XML.API">
+      <HintPath>..\..\..\..\Downloads\Compressed\ZatcaIntegration_CSharp_TrailVersion_2\ZatcaIntegration\ZatcaIntegration\bin\Debug\IKVM.OpenJDK.XML.API.dll</HintPath>
+    </Reference>
+    <Reference Include="IKVM.Runtime">
+      <HintPath>..\..\..\..\Downloads\Compressed\ZatcaIntegration_CSharp_TrailVersion_2\ZatcaIntegration\ZatcaIntegration\bin\Debug\IKVM.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="saxon-he-10.8">
+      <HintPath>..\..\..\..\Downloads\Compressed\ZatcaIntegration_CSharp_TrailVersion_2\ZatcaIntegration\ZatcaIntegration\bin\Debug\saxon-he-10.8.dll</HintPath>
+    </Reference>
+    <Reference Include="saxon-he-api-10.8">
+      <HintPath>..\..\..\..\Downloads\Compressed\ZatcaIntegration_CSharp_TrailVersion_2\ZatcaIntegration\ZatcaIntegration\bin\Debug\saxon-he-api-10.8.dll</HintPath>
+    </Reference>
+    <Reference Include="ZatcaIntegrationSDK">
+      <HintPath>..\..\..\..\Downloads\Compressed\ZatcaIntegration_CSharp_TrailVersion_2\ZatcaIntegration\ZatcaIntegration\bin\Debug\ZatcaIntegrationSDK.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
