@@ -16,5 +16,7 @@ namespace ZATCA_V2.Models
         public string IndustryBusinessCategory { get; set; }
 
         public ICollection<CompanyCredentials>? CompanyCredentials { get; set; }
+        public CompanyInfo? CompanyInfo { get; set; }
+
     }
 }

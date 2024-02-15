@@ -18,6 +18,7 @@ builder.Services.AddDbContext<DataContext>(options =>
 
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<ICompanyCredentialsRepository, CompanyCredentialsRepository>();
+builder.Services.AddScoped<ICompanyInfoRepository, ICompanyInfoRepository>();
 builder.Services.AddScoped<IExternalApiService, ExternalApiService>();
 
 
