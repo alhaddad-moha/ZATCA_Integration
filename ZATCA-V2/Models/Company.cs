@@ -3,7 +3,6 @@
 namespace ZATCA_V2.Models
 {
     [Index(nameof(OrganizationIdentifier), IsUnique = true)]
-
     public class Company
     {
         public int Id { get; set; }
@@ -17,6 +16,6 @@ namespace ZATCA_V2.Models
 
         public ICollection<CompanyCredentials>? CompanyCredentials { get; set; }
         public CompanyInfo? CompanyInfo { get; set; }
-
+        public ICollection<SignedInvoice> SignedInvoices { get; set; } = new List<SignedInvoice>();
     }
 }

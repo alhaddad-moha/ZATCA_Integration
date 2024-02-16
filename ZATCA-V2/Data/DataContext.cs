@@ -26,6 +26,11 @@ namespace ZATCA_V2.Data
                 .HasOne(c => c.CompanyInfo)
                 .WithOne(ci => ci.Company)
                 .HasForeignKey<CompanyInfo>(ci => ci.CompanyId); // Use CompanyId instead of ID
+            
+            modelBuilder.Entity<Company>()
+                .HasMany(c => c.SignedInvoices)
+                .WithOne(si => si.Company)
+                .HasForeignKey(si => si.CompanyId);
 
         }
     }

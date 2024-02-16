@@ -171,6 +171,70 @@ namespace ZATCA_V2.Migrations
                     b.ToTable("CompanyInfos");
                 });
 
+            modelBuilder.Entity("ZATCA_V2.Models.SignedInvoice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EncodedInvoice")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("InvoiceHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("InvoiceType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("QRCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SingedXML")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SingedXMLFileName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Tax")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("UUID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("InvoiceHash")
+                        .IsUnique();
+
+                    b.HasIndex("UUID")
+                        .IsUnique();
+
+                    b.ToTable("SignedInvoice");
+                });
+
             modelBuilder.Entity("ZATCA_V2.Models.CompanyCredentials", b =>
                 {
                     b.HasOne("ZATCA_V2.Models.Company", "Company")
@@ -193,11 +257,24 @@ namespace ZATCA_V2.Migrations
                     b.Navigation("Company");
                 });
 
+            modelBuilder.Entity("ZATCA_V2.Models.SignedInvoice", b =>
+                {
+                    b.HasOne("ZATCA_V2.Models.Company", "Company")
+                        .WithMany("SignedInvoices")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+                });
+
             modelBuilder.Entity("ZATCA_V2.Models.Company", b =>
                 {
                     b.Navigation("CompanyCredentials");
 
                     b.Navigation("CompanyInfo");
+
+                    b.Navigation("SignedInvoices");
                 });
 #pragma warning restore 612, 618
         }
