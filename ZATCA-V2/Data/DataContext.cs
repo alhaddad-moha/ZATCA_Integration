@@ -12,7 +12,8 @@ namespace ZATCA_V2.Data
         public DbSet<Company> Companies { get; set; }
         public DbSet<CompanyCredentials> CompanyCredentials { get; set; }
         public DbSet<CompanyInfo> CompanyInfos { get; set; }
-        
+        public DbSet<SignedInvoice?> SignedInvoice { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

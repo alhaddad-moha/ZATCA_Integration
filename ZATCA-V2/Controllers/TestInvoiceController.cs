@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ZATCA_V2.Helpers;
+using ZATCA_V2.Models;
 using ZATCA_V2.Repositories.Interfaces;
 using ZATCA_V2.Requests;
 using ZATCA_V2.Utils;
@@ -17,14 +18,17 @@ namespace ZATCA_V2.Controllers
     {
         private readonly ICompanyInfoRepository _companyInfoRepository;
         private readonly ICompanyRepository _companyRepository;
+        private readonly ISignedInvoiceRepository _signedInvoiceRepository;
         private readonly ICompanyCredentialsRepository _companyCredentialsRepository;
 
         public TestInvoiceController(ICompanyInfoRepository companyInfoRepository,
             ICompanyRepository companyRepository,
-            ICompanyCredentialsRepository companyCredentialsRepository)
+            ICompanyCredentialsRepository companyCredentialsRepository,
+            ISignedInvoiceRepository signedInvoiceRepository)
         {
             _companyInfoRepository = companyInfoRepository;
             _companyRepository = companyRepository;
+            _signedInvoiceRepository = signedInvoiceRepository;
             _companyCredentialsRepository = companyCredentialsRepository;
         }
 
@@ -310,7 +314,7 @@ namespace ZATCA_V2.Controllers
             inv.cSIDInfo.CertPem = companyCredentials.Certificate;
             inv.cSIDInfo.PrivateKey = companyCredentials.PrivateKey;
 
-
+            SignedInvoice signedInvoice = null;
             res = ubl.GenerateInvoiceXML(inv, Directory.GetCurrentDirectory());
             if (res.IsValid)
             {
@@ -327,15 +331,25 @@ namespace ZATCA_V2.Controllers
                 //return BadRequest(res);
             }
 
+            signedInvoice = new SignedInvoice
+            {
+                UUID = res.UUID,
+                InvoiceHash = res.InvoiceHash,
+                InvoiceType = "Standard",
+                Amount = Convert.ToDecimal(res.TaxExclusiveAmount),
+                Tax = Convert.ToDecimal(res.TaxAmount),
+                SingedXML = res.SingedXML,
+                EncodedInvoice = res.EncodedInvoice,
+                QRCode = res.QRCode,
+                SingedXMLFileName = res.SingedXMLFileName,
+                CompanyId = company.Id,
+            };
 
             ApiRequestLogic apireqlogic = new ApiRequestLogic(Mode.developer);
             ComplianceCsrResponse tokenresponse = new ComplianceCsrResponse();
 
             InvoiceReportingRequest invrequestbody = new InvoiceReportingRequest();
-            //for production
-            // tokenresponse = apireqlogic.GetProductionCSIDAPI(tokenresponse.RequestId,tokenresponse.BinarySecurityToken,tokenresponse.Secret);
 
-            //return Ok(tokenresponse.BinarySecurityToken);
             invrequestbody.invoice = res.EncodedInvoice;
             invrequestbody.invoiceHash = res.InvoiceHash;
             invrequestbody.uuid = res.UUID;
@@ -348,6 +362,9 @@ namespace ZATCA_V2.Controllers
 
             if (string.IsNullOrEmpty(invoicereportingmodel.ErrorMessage))
             {
+                await _signedInvoiceRepository.Create(signedInvoice);
+              
+
                 return Ok(new
                 {
                     ZATCA = invoicereportingmodel,
