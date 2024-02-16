@@ -3,6 +3,7 @@
 public class CompanyInfo
 {
     public int Id { get; set; }
+    public int PartyId { get; set; }
     public string SchemeID { get; set; }
     public string StreetName { get; set; }
     public string? AdditionalStreetName { get; set; }

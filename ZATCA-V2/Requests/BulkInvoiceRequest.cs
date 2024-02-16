@@ -2,10 +2,5 @@
 
 public class BulkInvoiceRequest
 {
-    
-}
-
-class Party
-{
-    
+    public int companyId { get; set; }
 }

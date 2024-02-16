@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ZATCA_V2.Helpers;
+using ZATCA_V2.Repositories.Interfaces;
+using ZATCA_V2.Requests;
 using ZATCA_V2.Utils;
 using ZatcaIntegrationSDK;
 using ZatcaIntegrationSDK.APIHelper;
@@ -13,6 +15,19 @@ namespace ZATCA_V2.Controllers
     [ApiController]
     public class TestInvoiceController : ControllerBase
     {
+        private readonly ICompanyInfoRepository _companyInfoRepository;
+        private readonly ICompanyRepository _companyRepository;
+        private readonly ICompanyCredentialsRepository _companyCredentialsRepository;
+
+        public TestInvoiceController(ICompanyInfoRepository companyInfoRepository,
+            ICompanyRepository companyRepository,
+            ICompanyCredentialsRepository companyCredentialsRepository)
+        {
+            _companyInfoRepository = companyInfoRepository;
+            _companyRepository = companyRepository;
+            _companyCredentialsRepository = companyCredentialsRepository;
+        }
+
         [HttpGet("generate")]
         public IActionResult Generate()
         {
@@ -138,9 +153,24 @@ namespace ZATCA_V2.Controllers
             }
         }
 
-        [HttpGet("standard")]
-        public IActionResult GenerateStandard()
+        [HttpPost("standard")]
+        public async Task<IActionResult> GenerateStandard(BulkInvoiceRequest bulkInvoiceRequest)
         {
+            var companyInfo = await _companyInfoRepository.GetByCompanyId(bulkInvoiceRequest.companyId);
+            var company = await _companyRepository.GetById(bulkInvoiceRequest.companyId);
+            var companyCredentials = await _companyCredentialsRepository.GetLatestByCompanyId(bulkInvoiceRequest.companyId);
+
+            if (company == null)
+            {
+                return BadRequest("Company Not Found");
+            }
+
+            if (companyCredentials == null)
+            {
+                return BadRequest("companyCredentials Not Found");
+            }
+
+
             UBLXML ubl = new UBLXML();
             Invoice inv = new Invoice();
             Result res = new Result();
@@ -185,19 +215,15 @@ namespace ZATCA_V2.Controllers
             // inv.paymentmeans.payeefinancialaccount.ID = "";//اختيارى
             // inv.paymentmeans.payeefinancialaccount.paymentnote = "Payment by credit";//اختيارى
             //بيانات البائع
-            inv.SupplierParty.partyIdentification.ID = "1515325162";
-            inv.SupplierParty.partyIdentification.schemeID = "CRN"; //رقم السجل التجارى
-            inv.SupplierParty.postalAddress.StreetName = "Kemarat Street,"; // اجبارى
-            inv.SupplierParty.postalAddress.AdditionalStreetName = ""; //اختيارى
-            inv.SupplierParty.postalAddress.BuildingNumber = "3724"; // اجبارى
-            inv.SupplierParty.postalAddress.PlotIdentification = "9833"; //اختيارى
-            inv.SupplierParty.postalAddress.CityName = "جدة";
-            inv.SupplierParty.postalAddress.PostalZone = "15385";
-            inv.SupplierParty.postalAddress.CountrySubentity = "Makkah"; // اختيارى
-            inv.SupplierParty.postalAddress.CitySubdivisionName = "Alfalah";
-            inv.SupplierParty.postalAddress.country.IdentificationCode = "SA";
-            inv.SupplierParty.partyLegalEntity.RegistrationName = "Alhaddad";
-            inv.SupplierParty.partyTaxScheme.CompanyID = "300068256300003";
+
+            AccountingSupplierParty supplierParty = InvoiceHelper.CreateSupplierParty(
+                companyInfo.PartyId.ToString(), companyInfo.SchemeID, companyInfo.StreetName,
+                companyInfo.AdditionalStreetName, companyInfo.BuildingNumber,
+                companyInfo.PlotIdentification, companyInfo.CityName, companyInfo.PostalZone,
+                companyInfo.CountrySubentity,
+                companyInfo.CitySubdivisionName, companyInfo.IdentificationCode, companyInfo.RegistrationName,
+                companyInfo.taxRegistrationNumber);
+            inv.SupplierParty = supplierParty;
             // بيانات المشترى اجبارى
             inv.CustomerParty.partyIdentification.ID = "123456"; //رقم السجل التجارى
             inv.CustomerParty.partyIdentification.schemeID = "CRN";
@@ -293,7 +319,7 @@ namespace ZATCA_V2.Controllers
             }
             else
             {
-                return BadRequest(res);
+                //return BadRequest(res);
             }
 
 
@@ -301,37 +327,34 @@ namespace ZATCA_V2.Controllers
             ComplianceCsrResponse tokenresponse = new ComplianceCsrResponse();
 
             InvoiceReportingRequest invrequestbody = new InvoiceReportingRequest();
-            string csr = System.IO.File.ReadAllText(Directory.GetCurrentDirectory() + "\\cert\\csr.csr");
-            tokenresponse = apireqlogic.GetComplianceCSIDAPI("12345", csr);
             //for production
             // tokenresponse = apireqlogic.GetProductionCSIDAPI(tokenresponse.RequestId,tokenresponse.BinarySecurityToken,tokenresponse.Secret);
-            if (string.IsNullOrEmpty(tokenresponse.ErrorMessage))
+
+            //return Ok(tokenresponse.BinarySecurityToken);
+            invrequestbody.invoice = res.EncodedInvoice;
+            invrequestbody.invoiceHash = res.InvoiceHash;
+            invrequestbody.uuid = res.UUID;
+            InvoiceReportingResponse invoicereportingmodel =
+                apireqlogic.CallComplianceInvoiceAPI(companyCredentials.SecretToken, companyCredentials.Secret,
+                    invrequestbody);
+            //for production
+
+            //InvoiceClearanceResponse invoicereportingmodel = apireqlogic.CallClearanceAPI(Utility.ToBase64Encode(inv.cSIDInfo.CertPem), "cuqeJ5yQPoGInAF4MrynTQYOIwAYXN1jhpjFgRkga04=", invrequestbody);
+
+            if (string.IsNullOrEmpty(invoicereportingmodel.ErrorMessage))
             {
-                //return Ok(tokenresponse.BinarySecurityToken);
-                invrequestbody.invoice = res.EncodedInvoice;
-                invrequestbody.invoiceHash = res.InvoiceHash;
-                invrequestbody.uuid = res.UUID;
-                InvoiceReportingResponse invoicereportingmodel =
-                    apireqlogic.CallComplianceInvoiceAPI(tokenresponse.BinarySecurityToken, tokenresponse.Secret,
-                        invrequestbody);
-                //for production
-
-                //InvoiceClearanceResponse invoicereportingmodel = apireqlogic.CallClearanceAPI(Utility.ToBase64Encode(inv.cSIDInfo.CertPem), "cuqeJ5yQPoGInAF4MrynTQYOIwAYXN1jhpjFgRkga04=", invrequestbody);
-
-                if (string.IsNullOrEmpty(invoicereportingmodel.ErrorMessage))
+                return Ok(new
                 {
-                    return Ok(invoicereportingmodel.ClearanceStatus); //CLEARED
-                }
-                else
-                {
-
-                    return Ok(invoicereportingmodel);
-                }
+                    ZATCA = invoicereportingmodel,
+                    Res = res
+                });
             }
             else
             {
-                return Ok(tokenresponse);
+                return Ok(invoicereportingmodel);
             }
         }
+
     }
 }
+    

@@ -27,6 +27,12 @@ namespace ZATCA_V2.Repositories
         {
             return await _context.CompanyInfos.FindAsync(id);
         }
+        public async Task<CompanyInfo?> GetByCompanyId(int id)
+        {
+            return await _context.CompanyInfos
+                  .Where(ci => ci.CompanyId == id)
+                  .FirstOrDefaultAsync();
+        }
 
         public async Task Create(CompanyInfo companyInfo)
         {
