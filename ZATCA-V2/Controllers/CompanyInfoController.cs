@@ -26,7 +26,7 @@ namespace ZATCA_V2.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<CompanyInfo>> GetById(string id)
+        public async Task<ActionResult<CompanyInfo>> GetById(int id)
         {
             var companyInfo = await _companyInfoRepository.GetById(id);
 
@@ -48,13 +48,13 @@ namespace ZATCA_V2.Controllers
 
             await _companyInfoRepository.Create(companyInfo);
 
-            return CreatedAtAction(nameof(GetById), new { id = companyInfo.ID }, companyInfo);
+            return CreatedAtAction(nameof(GetById), new { id = companyInfo.Id}, companyInfo);
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(string id, [FromBody] CompanyInfo companyInfo)
+        public async Task<ActionResult> Update(int id, [FromBody] CompanyInfo companyInfo)
         {
-            if (companyInfo == null || id != companyInfo.ID)
+            if (companyInfo == null || id != companyInfo.Id)
             {
                 return BadRequest("Invalid input");
             }
@@ -74,7 +74,7 @@ namespace ZATCA_V2.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(string id)
+        public async Task<ActionResult> Delete(int id)
         {
             var companyInfo = await _companyInfoRepository.GetById(id);
 

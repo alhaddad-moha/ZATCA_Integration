@@ -2,7 +2,7 @@
 
 public class CompanyInfo
 {
-    public string ID { get; set; }
+    public int Id { get; set; }
     public string SchemeID { get; set; }
     public string StreetName { get; set; }
     public string? AdditionalStreetName { get; set; }
@@ -15,5 +15,6 @@ public class CompanyInfo
     public string IdentificationCode { get; set; } = "SA";
     public string RegistrationName { get; set; }
     public string taxRegistrationNumber { get; set; }
-    public Company Company { get; set; }
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
 }

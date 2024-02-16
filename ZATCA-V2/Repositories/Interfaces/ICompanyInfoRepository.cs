@@ -7,9 +7,9 @@ namespace ZATCA_V2.Repositories.Interfaces
     public interface ICompanyInfoRepository
     {
         Task<List<CompanyInfo>?> GetAll();
-        Task<CompanyInfo?> GetById(string id);
+        Task<CompanyInfo?> GetById(int id);
         Task Create(CompanyInfo companyInfo);
         Task Update(CompanyInfo companyInfo);
-        Task Delete(string id);
+        Task Delete(int id);
     }
 }

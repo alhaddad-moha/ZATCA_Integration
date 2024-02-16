@@ -23,7 +23,7 @@ namespace ZATCA_V2.Repositories
             return await _context.CompanyInfos.ToListAsync();
         }
 
-        public async Task<CompanyInfo?> GetById(string id)
+        public async Task<CompanyInfo?> GetById(int id)
         {
             return await _context.CompanyInfos.FindAsync(id);
         }
@@ -50,8 +50,8 @@ namespace ZATCA_V2.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task Delete(string id)
-        {
+        public async Task Delete(int id)
+           {
             var companyInfo = await _context.CompanyInfos.FindAsync(id);
             if (companyInfo != null)
             {
