@@ -399,6 +399,212 @@ namespace ZATCA_V2.Controllers
 
 
             UBLXML ubl = new UBLXML();
+            ApiRequestLogic apireqlogic = new ApiRequestLogic(Mode.developer);
+
+            List<object> responses = new List<object>();
+            foreach (var invoiceData in bulkInvoiceRequest.Invoices)
+            {
+                Invoice inv = new Invoice();
+                Result res = new Result();
+
+
+                inv.ID = invoiceData.Id;
+                inv.IssueDate = invoiceData.IssueDate;
+                inv.IssueTime = invoiceData.IssueTime;
+
+                inv.invoiceTypeCode.id = bulkInvoiceRequest.InvoicesType!.Id;
+
+                inv.invoiceTypeCode.Name = bulkInvoiceRequest.InvoicesType!.Name;
+                inv.DocumentCurrencyCode = bulkInvoiceRequest.InvoicesType!.DocumentCurrencyCode;
+
+                inv.TaxCurrencyCode =
+                    bulkInvoiceRequest.InvoicesType!
+                        .TaxCurrencyCode; ////فى حالة الدولار لابد ان تكون عملة الضريبة بالريال السعودى
+                //inv.CurrencyRate = decimal.Parse("3.75"); // قيمة الدولار مقابل الريال
+                // فى حالة ان اشعار دائن او مدين فقط هانكتب رقم الفاتورة اللى اصدرنا الاشعار ليها
+                inv.billingReference.InvoiceDocumentReferenceID = invoiceData.InvoiceDocumentReferenceID;
+                // هنا ممكن اضيف ال pih من قاعدة البيانات  
+                //TODO Change this
+                inv.AdditionalDocumentReferencePIH.EmbeddedDocumentBinaryObject =
+                    "NWZlY2ViNjZmZmM4NmYzOGQ5NTI3ODZjNmQ2OTZjNzljMmRiYzIzOWRkNGU5MWI0NjcyOWQ3M2EyN2ZiNTdlOQ==";
+                // قيمة عداد الفاتورة
+                inv.AdditionalDocumentReferenceICV.UUID = invoiceData.AddtionalId;
+                //بيانات الدفع 
+                // اكواد معين
+                // اختيارى كود الدفع
+                //inv.paymentmeans.PaymentMeansCode = "48";//اختيارى
+                //inv.paymentmeans.InstructionNote = "Purchase"; //اجبارى فى الاشعارات
+                // inv.paymentmeans.payeefinancialaccount.ID = "";//اختيارى
+                // inv.paymentmeans.payeefinancialaccount.paymentnote = "Payment by credit";//اختيارى
+                //بيانات البائع
+                PaymentMeans paymentMeans = new PaymentMeans();
+                paymentMeans.PaymentMeansCode = invoiceData.PaymentDetails.Type;
+                paymentMeans.InstructionNote = invoiceData.PaymentDetails.InstructionNote;
+                inv.paymentmeans.Add(paymentMeans);
+
+                inv.delivery.ActualDeliveryDate = invoiceData.ActualDeliveryDate;
+                inv.delivery.LatestDeliveryDate = invoiceData.LatestDeliveryDate;
+
+                AccountingSupplierParty supplierParty = InvoiceHelper.CreateSupplierParty(
+                    companyInfo.PartyId.ToString(), companyInfo.SchemeID, companyInfo.StreetName,
+                    companyInfo.AdditionalStreetName, companyInfo.BuildingNumber,
+                    companyInfo.PlotIdentification, companyInfo.CityName, companyInfo.PostalZone,
+                    companyInfo.CountrySubentity,
+                    companyInfo.CitySubdivisionName, companyInfo.IdentificationCode, companyInfo.RegistrationName,
+                    companyInfo.taxRegistrationNumber);
+
+                inv.SupplierParty = supplierParty;
+
+                AccountingCustomerParty customerParty = InvoiceHelper.CreateCustomerParty(
+                    invoiceData.CustomerInformation.CommercialNumber,
+                    invoiceData.CustomerInformation.CommercialNumberType,
+                    invoiceData.CustomerInformation.Address.StreetName,
+                    invoiceData.CustomerInformation.Address.AdditionalStreetName,
+                    invoiceData.CustomerInformation.Address.BuildingNumber,
+                    invoiceData.CustomerInformation.Address.PlotIdentification,
+                    invoiceData.CustomerInformation.Address.CityName,
+                    invoiceData.CustomerInformation.Address.PostalZone,
+                    invoiceData.CustomerInformation.Address.CountrySubentity,
+                    invoiceData.CustomerInformation.Address.CitySubdivisionName,
+                    invoiceData.CustomerInformation.Address.IdentificationCode,
+                    invoiceData.CustomerInformation.RegistrationName,
+                    invoiceData.CustomerInformation.RegistrationNumber
+                );
+
+                inv.CustomerParty = customerParty;
+
+                AllowanceCharge allowancecharge = new AllowanceCharge();
+
+                allowancecharge.taxCategory.ID = invoiceData.AllowanceCharge.TaxCategoryId;
+                allowancecharge.taxCategory.Percent = invoiceData.AllowanceCharge.TaxCategoryPercent;
+
+                allowancecharge.Amount = invoiceData.AllowanceCharge.TaxCategoryId.Equals("S")
+                    ? 0
+                    : invoiceData.AllowanceCharge.Amount;
+
+                allowancecharge.AllowanceChargeReason = invoiceData.AllowanceCharge.Reason;
+                inv.allowanceCharges.Add(allowancecharge);
+
+                /*inv.legalMonetaryTotal.PrepaidAmount = invoiceData.LegalTotal.PrepaidAmount;*/
+
+
+                List<object> invoItems = new List<object>();
+
+                foreach (var invoiceItem in invoiceData.InvoiceItems)
+                {
+                    InvoiceLine invoiceLine = InvoiceHelper.CreateInvoiceLine(
+                        invoiceItem.Name, invoiceItem.Quantity, invoiceItem.BaseQuantity,
+                        invoiceItem.Price, inv.allowanceCharges, invoiceItem.VatCategory,
+                        invoiceItem.VatPercentage, invoiceItem.IsIncludingVat, invoiceItem.TaxExemptionReasonCode,
+                        invoiceItem.TaxExemptionReason);
+
+                    inv.InvoiceLines.Add(invoiceLine);
+                }
+
+
+                inv.cSIDInfo.CertPem = companyCredentials.Certificate;
+                inv.cSIDInfo.PrivateKey = companyCredentials.PrivateKey;
+
+                SignedInvoice signedInvoice = null;
+                res = ubl.GenerateInvoiceXML(inv, Directory.GetCurrentDirectory());
+                if (res.IsValid)
+                {
+                    //return Ok(res.InvoiceHash);
+                    //return Ok(res.SingedXML);
+                    //return Ok(res.EncodedInvoice);
+                    //return Ok(res.UUID);
+                    //return Ok(res.QRCode);
+                    //return Ok(res.PIH);
+                    //return Ok(res.SingedXMLFileName);
+                }
+                else
+                {
+                    //return BadRequest(res);
+                }
+
+                signedInvoice = new SignedInvoice
+                {
+                    UUID = res.UUID,
+                    InvoiceHash = res.InvoiceHash,
+                    InvoiceType = "Standard",
+                    Amount = Convert.ToDecimal(res.TaxExclusiveAmount),
+                    Tax = Convert.ToDecimal(res.TaxAmount),
+                    SingedXML = res.SingedXML,
+                    EncodedInvoice = res.EncodedInvoice,
+                    QRCode = res.QRCode,
+                    SingedXMLFileName = res.SingedXMLFileName,
+                    CompanyId = company.Id,
+                };
+
+
+                InvoiceReportingRequest invrequestbody = new InvoiceReportingRequest();
+
+                invrequestbody.invoice = res.EncodedInvoice;
+                invrequestbody.invoiceHash = res.InvoiceHash;
+                invrequestbody.uuid = res.UUID;
+                InvoiceReportingResponse invoicereportingmodel =
+                    apireqlogic.CallComplianceInvoiceAPI(companyCredentials.SecretToken, companyCredentials.Secret,
+                        invrequestbody);
+                //for production
+
+                //InvoiceClearanceResponse invoicereportingmodel = apireqlogic.CallClearanceAPI(Utility.ToBase64Encode(inv.cSIDInfo.CertPem), "cuqeJ5yQPoGInAF4MrynTQYOIwAYXN1jhpjFgRkga04=", invrequestbody);
+
+                if (string.IsNullOrEmpty(invoicereportingmodel.ErrorMessage))
+                {
+                    await _signedInvoiceRepository.Create(signedInvoice);
+
+                    responses.Add(new
+                    {
+                        ZATCA = invoicereportingmodel,
+                        Res = new
+                        {
+                            res.InvoiceHash,
+                            res.UUID,
+                            res.PIH,
+                            res.QRCode,
+                            res.LineExtensionAmount,
+                            res.TaxExclusiveAmount,
+                            res.TaxInclusiveAmount,
+                            res.AllowanceTotalAmount,
+                            res.ChargeTotalAmount,
+                            res.PayableAmount,
+                            res.PrepaidAmount,
+                            res.TaxAmount,
+                            res.EncodedInvoice,
+
+                        }
+                    });
+                }
+                else
+                {
+                    responses.Add(invoicereportingmodel);
+                }
+            }
+
+            return Ok(responses);
+        }
+
+
+        [HttpPost("single-standard-dynamic")]
+        public async Task<IActionResult> GenerateSingleDynamicStandard(BulkInvoiceRequest bulkInvoiceRequest)
+        {
+            var companyInfo = await _companyInfoRepository.GetByCompanyId(bulkInvoiceRequest.companyId);
+            var company = await _companyRepository.GetById(bulkInvoiceRequest.companyId);
+            var companyCredentials =
+                await _companyCredentialsRepository.GetLatestByCompanyId(bulkInvoiceRequest.companyId);
+
+            if (company == null)
+            {
+                return BadRequest("Company Not Found");
+            }
+
+            if (companyCredentials == null)
+            {
+                return BadRequest("companyCredentials Not Found");
+            }
+
+
+            UBLXML ubl = new UBLXML();
             Invoice inv = new Invoice();
             Result res = new Result();
 

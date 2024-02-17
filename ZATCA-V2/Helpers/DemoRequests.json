@@ -9,9 +9,9 @@
     },
     "Invoices": [
       {
-        "Id": "123",
-        "AddtionalId": 456,
-        "InvoiceDocumentReferenceID": "789",
+        "Id": "124",
+        "AddtionalId": 457,
+        "InvoiceDocumentReferenceID": "799",
         "IssueDate": "2022-02-15",
         "IssueTime": "12:34:56",
         "ActualDeliveryDate": "2022-02-20",
@@ -41,10 +41,10 @@
           "Amount": 0,
           "Reason": "Sample Reason",
           "TaxCategoryId": "S",
-          "TaxCategoryPercent":15
+          "TaxCategoryPercent": 15
         },
         "LegalTotal": {
-          "PrepaidAmount": 150
+          "PrepaidAmount": 0
         },
         "InvoiceItems": [
           {
@@ -52,6 +52,17 @@
             "Quantity": 2,
             "BaseQuantity": 2,
             "Price": 396.68,
+            "VatCategory": "S",
+            "VatPercentage": 15,
+            "IsIncludingVat": false,
+            "TaxExemptionReasonCode": null,
+            "TaxExemptionReason": null
+          },
+          {
+            "Name": "Item 2",
+            "Quantity": 10,
+            "BaseQuantity": 10,
+            "Price": 500,
             "VatCategory": "S",
             "VatPercentage": 15,
             "IsIncludingVat": false,

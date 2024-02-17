@@ -37,6 +37,7 @@
     <Folder Include="Invoices\Signed\Simplified\Debit\" />
     <Folder Include="Invoices\Signed\Standard\Credit\" />
     <Folder Include="Invoices\Signed\Standard\Debit\" />
+    <Folder Include="Invoices\Signed\Standard\Invoices\" />
   </ItemGroup>
 
   <ItemGroup>
