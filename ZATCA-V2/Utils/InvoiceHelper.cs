@@ -5,10 +5,10 @@ namespace ZATCA_V2.Utils
     public class InvoiceHelper
     {
         public static AccountingSupplierParty CreateSupplierParty(
-        string partyId, string schemeId, string streetName, string additionalStreetName,
-        string buildingNumber, string plotIdentification, string cityName, string postalZone,
-        string countrySubentity, string citySubdivisionName, string countryIdentificationCode,
-        string registrationName, string companyID)
+            string partyId, string schemeId, string streetName, string additionalStreetName,
+            string buildingNumber, string plotIdentification, string cityName, string postalZone,
+            string countrySubentity, string citySubdivisionName, string countryIdentificationCode,
+            string registrationName, string companyID)
         {
             // Create an instance of the SupplierParty class
             AccountingSupplierParty supplierParty = new AccountingSupplierParty
@@ -47,12 +47,11 @@ namespace ZATCA_V2.Utils
         }
 
         public static AccountingCustomerParty CreateCustomerParty(
-              string partyId, string schemeId, string streetName, string additionalStreetName,
-              string buildingNumber, string plotIdentification, string cityName, string postalZone,
-              string countrySubentity, string citySubdivisionName, string countryIdentificationCode,
-              string registrationName, string companyID)
+            string partyId, string schemeId, string streetName, string? additionalStreetName,
+            string buildingNumber, string? plotIdentification, string cityName, string postalZone,
+            string? countrySubentity, string? citySubdivisionName, string countryIdentificationCode,
+            string registrationName, string companyID)
         {
-
             AccountingCustomerParty customerParty = new AccountingCustomerParty
             {
                 partyIdentification = new PartyIdentification
@@ -88,49 +87,80 @@ namespace ZATCA_V2.Utils
             return customerParty;
         }
 
-        public static InvoiceLine GetInvoiceLine(string itemname, decimal invoicedquantity, decimal basequantity, decimal itemprice, AllowanceChargeCollection allowanceCharges, string vatcategory, decimal vatpercentage, bool includingvat = false, string TaxExemptionReasonCode = "", string TaxExemptionReason = "")
+        public static InvoiceLine GetInvoiceLine(string itemName, decimal invoiceQuantity, decimal baseQuantity,
+            decimal itemPrice, AllowanceChargeCollection allowanceCharges, string vatCategory,
+            decimal vatPercentage, bool includingVat = false, string taxExemptionReasonCode = "",
+            string taxExemptionReason = "")
         {
             InvoiceLine invline = new InvoiceLine();
-            invline.item.Name = itemname;
-            invline.InvoiceQuantity = invoicedquantity; // 
-            invline.price.BaseQuantity = basequantity;
-            invline.price.PriceAmount = itemprice;// سعر المنتج  
+            invline.item.Name = itemName;
+            invline.InvoiceQuantity = invoiceQuantity; // 
+            invline.price.BaseQuantity = baseQuantity;
+            invline.price.PriceAmount = itemPrice; // سعر المنتج  
 
-            invline.item.classifiedTaxCategory.ID = vatcategory;// كود الضريبة
-            invline.item.classifiedTaxCategory.Percent = vatpercentage;// نسبة الضريبة
+            invline.item.classifiedTaxCategory.ID = vatCategory; // كود الضريبة
+            invline.item.classifiedTaxCategory.Percent = vatPercentage; // نسبة الضريبة
             invline.allowanceCharges = allowanceCharges;
-            //if the price is including vat set EncludingVat=true;
-            invline.price.EncludingVat = includingvat;
+            invline.price.EncludingVat = includingVat;
 
-            invline.taxTotal.TaxSubtotal.taxCategory.ID = vatcategory;//كود الضريبة
-            invline.taxTotal.TaxSubtotal.taxCategory.Percent = vatpercentage;//نسبة الضريبة
-            if (vatcategory != "S")
+            invline.taxTotal.TaxSubtotal.taxCategory.ID = vatCategory; //كود الضريبة
+            invline.taxTotal.TaxSubtotal.taxCategory.Percent = vatPercentage; //نسبة الضريبة
+            if (vatCategory != "S")
             {
-                invline.taxTotal.TaxSubtotal.taxCategory.TaxExemptionReason = TaxExemptionReason;
-                invline.taxTotal.TaxSubtotal.taxCategory.TaxExemptionReasonCode = TaxExemptionReasonCode;
+                invline.taxTotal.TaxSubtotal.taxCategory.TaxExemptionReason = taxExemptionReason;
+                invline.taxTotal.TaxSubtotal.taxCategory.TaxExemptionReasonCode = taxExemptionReasonCode;
+            }
+
+            return invline;
+        }
+        public static InvoiceLine CreateInvoiceLine(string itemName, decimal invoiceQuantity, decimal baseQuantity,
+            decimal itemPrice, AllowanceChargeCollection allowanceCharges, string vatCategory,
+            decimal vatPercentage, bool includingVat = false, string? taxExemptionReasonCode = "",
+            string? taxExemptionReason = "")
+        {
+            InvoiceLine invline = new InvoiceLine();
+            invline.item.Name = itemName;
+            invline.InvoiceQuantity = invoiceQuantity; // 
+            invline.price.BaseQuantity = baseQuantity;
+            invline.price.PriceAmount = itemPrice; // سعر المنتج  
+
+            invline.item.classifiedTaxCategory.ID = vatCategory; // كود الضريبة
+            invline.item.classifiedTaxCategory.Percent = vatPercentage; // نسبة الضريبة
+            invline.allowanceCharges = allowanceCharges;
+            invline.price.EncludingVat = includingVat;
+
+            invline.taxTotal.TaxSubtotal.taxCategory.ID = vatCategory; //كود الضريبة
+            invline.taxTotal.TaxSubtotal.taxCategory.Percent = vatPercentage; //نسبة الضريبة
+            if (vatCategory != "S")
+            {
+                invline.taxTotal.TaxSubtotal.taxCategory.TaxExemptionReason = taxExemptionReason;
+                invline.taxTotal.TaxSubtotal.taxCategory.TaxExemptionReasonCode = taxExemptionReasonCode;
             }
 
             return invline;
         }
 
-        public static InvoiceLine GetAdditionalInvoiceLine(string itemname, AllowanceChargeCollection allowanceCharges, string vatcategory, decimal vatpercentage, string TaxExemptionReasonCode = "", string TaxExemptionReason = "")
+        public static InvoiceLine GetAdditionalInvoiceLine(string itemname, AllowanceChargeCollection allowanceCharges,
+            string vatcategory, decimal vatpercentage, string TaxExemptionReasonCode = "",
+            string TaxExemptionReason = "")
         {
             InvoiceLine invline = new InvoiceLine();
             invline.item.Name = "Prepayment adjustment";
             invline.InvoiceQuantity = 1; // 
-            invline.price.PriceAmount = 0;// سعر المنتج  
+            invline.price.PriceAmount = 0; // سعر المنتج  
 
-            invline.item.classifiedTaxCategory.ID = vatcategory;// كود الضريبة
-            invline.item.classifiedTaxCategory.Percent = vatpercentage;// نسبة الضريبة
+            invline.item.classifiedTaxCategory.ID = vatcategory; // كود الضريبة
+            invline.item.classifiedTaxCategory.Percent = vatpercentage; // نسبة الضريبة
             invline.allowanceCharges = allowanceCharges;
 
-            invline.taxTotal.TaxSubtotal.taxCategory.ID = vatcategory;//كود الضريبة
-            invline.taxTotal.TaxSubtotal.taxCategory.Percent = vatpercentage;//نسبة الضريبة
+            invline.taxTotal.TaxSubtotal.taxCategory.ID = vatcategory; //كود الضريبة
+            invline.taxTotal.TaxSubtotal.taxCategory.Percent = vatpercentage; //نسبة الضريبة
             if (vatcategory != "S")
             {
                 invline.taxTotal.TaxSubtotal.taxCategory.TaxExemptionReason = TaxExemptionReason;
                 invline.taxTotal.TaxSubtotal.taxCategory.TaxExemptionReasonCode = TaxExemptionReasonCode;
             }
+
             invline.taxTotal.TaxSubtotal.TaxableAmount = 40m;
             invline.taxTotal.TaxSubtotal.TaxAmount = 6m;
             DocumentReference documentReference = new DocumentReference();
@@ -148,6 +178,5 @@ namespace ZATCA_V2.Utils
             invline.documentReferences.Add(documentReference1);
             return invline;
         }
-
     }
 }

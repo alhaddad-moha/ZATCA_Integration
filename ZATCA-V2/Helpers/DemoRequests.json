@@ -1,0 +1,65 @@
+﻿[
+  {
+    "companyId": 1,
+    "InvoicesType": {
+      "Id": 388,
+      "Name": "0100000",
+      "DocumentCurrencyCode": "SAR",
+      "TaxCurrencyCode": "SAR"
+    },
+    "Invoices": [
+      {
+        "Id": "123",
+        "AddtionalId": 456,
+        "InvoiceDocumentReferenceID": "789",
+        "IssueDate": "2022-02-15",
+        "IssueTime": "12:34:56",
+        "ActualDeliveryDate": "2022-02-20",
+        "LatestDeliveryDate": "2022-02-25",
+        "PaymentDetails": {
+          "Type": "10",
+          "InstructionNote": null
+        },
+        "CustomerInformation": {
+          "CommercialNumber": "123456789",
+          "CommercialNumberType": "CRN",
+          "Address": {
+            "StreetName": "Kemarat Street",
+            "AdditionalStreetName": null,
+            "BuildingNumber": "3724",
+            "PlotIdentification": "9833",
+            "CityName": "Jeddah",
+            "PostalZone": "15385",
+            "CountrySubentity": "Makkah",
+            "CitySubdivisionName": "Alfalah",
+            "IdentificationCode": "SA"
+          },
+          "RegistrationName": "First Shop",
+          "RegistrationNumber": "301121971100003"
+        },
+        "AllowanceCharge": {
+          "Amount": 0,
+          "Reason": "Sample Reason",
+          "TaxCategoryId": "S",
+          "TaxCategoryPercent":15
+        },
+        "LegalTotal": {
+          "PrepaidAmount": 150
+        },
+        "InvoiceItems": [
+          {
+            "Name": "Item 1",
+            "Quantity": 2,
+            "BaseQuantity": 2,
+            "Price": 396.68,
+            "VatCategory": "S",
+            "VatPercentage": 15,
+            "IsIncludingVat": false,
+            "TaxExemptionReasonCode": null,
+            "TaxExemptionReason": null
+          }
+        ]
+      }
+    ]
+  }
+]

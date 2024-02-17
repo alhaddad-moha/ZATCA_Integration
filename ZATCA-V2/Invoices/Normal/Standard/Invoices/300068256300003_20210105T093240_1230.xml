@@ -2,7 +2,7 @@
 <Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2">
   <cbc:ProfileID>reporting:1.0</cbc:ProfileID>
   <cbc:ID>1230</cbc:ID>
-  <cbc:UUID>018f6e12-ad9b-4ab9-9e57-0c71a889b404</cbc:UUID>
+  <cbc:UUID>ce0856af-d1b5-4729-89b4-1718d9bb3e3d</cbc:UUID>
   <cbc:IssueDate>2021-01-05</cbc:IssueDate>
   <cbc:IssueTime>09:32:40</cbc:IssueTime>
   <cbc:InvoiceTypeCode name="0100000">388</cbc:InvoiceTypeCode>
@@ -75,6 +75,10 @@
       </cac:PartyLegalEntity>
     </cac:Party>
   </cac:AccountingCustomerParty>
+  <cac:Delivery>
+    <cbc:ActualDeliveryDate>2022-10-22</cbc:ActualDeliveryDate>
+    <cbc:LatestDeliveryDate>2022-10-23</cbc:LatestDeliveryDate>
+  </cac:Delivery>
   <cac:AllowanceCharge>
     <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
     <cbc:AllowanceChargeReason>discount</cbc:AllowanceChargeReason>
