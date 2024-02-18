@@ -402,95 +402,13 @@ namespace ZATCA_V2.Controllers
             ApiRequestLogic apireqlogic = new ApiRequestLogic(Mode.developer);
 
             List<object> responses = new List<object>();
-            foreach (var invoiceData in bulkInvoiceRequest.Invoices)
+            foreach (var invoiceData in bulkInvoiceRequest.Invoices!)
             {
-                Invoice inv = new Invoice();
+                Invoice inv = CreateMainInvoice(bulkInvoiceRequest.InvoicesType!, invoiceData, companyInfo!);
                 Result res = new Result();
 
 
-                inv.ID = invoiceData.Id;
-                inv.IssueDate = invoiceData.IssueDate;
-                inv.IssueTime = invoiceData.IssueTime;
-
-                inv.invoiceTypeCode.id = bulkInvoiceRequest.InvoicesType!.Id;
-
-                inv.invoiceTypeCode.Name = bulkInvoiceRequest.InvoicesType!.Name;
-                inv.DocumentCurrencyCode = bulkInvoiceRequest.InvoicesType!.DocumentCurrencyCode;
-
-                inv.TaxCurrencyCode =
-                    bulkInvoiceRequest.InvoicesType!
-                        .TaxCurrencyCode; ////فى حالة الدولار لابد ان تكون عملة الضريبة بالريال السعودى
-                //inv.CurrencyRate = decimal.Parse("3.75"); // قيمة الدولار مقابل الريال
-                // فى حالة ان اشعار دائن او مدين فقط هانكتب رقم الفاتورة اللى اصدرنا الاشعار ليها
-                inv.billingReference.InvoiceDocumentReferenceID = invoiceData.InvoiceDocumentReferenceID;
-                // هنا ممكن اضيف ال pih من قاعدة البيانات  
-                //TODO Change this
-                inv.AdditionalDocumentReferencePIH.EmbeddedDocumentBinaryObject =
-                    "NWZlY2ViNjZmZmM4NmYzOGQ5NTI3ODZjNmQ2OTZjNzljMmRiYzIzOWRkNGU5MWI0NjcyOWQ3M2EyN2ZiNTdlOQ==";
-                // قيمة عداد الفاتورة
-                inv.AdditionalDocumentReferenceICV.UUID = invoiceData.AddtionalId;
-                //بيانات الدفع 
-                // اكواد معين
-                // اختيارى كود الدفع
-                //inv.paymentmeans.PaymentMeansCode = "48";//اختيارى
-                //inv.paymentmeans.InstructionNote = "Purchase"; //اجبارى فى الاشعارات
-                // inv.paymentmeans.payeefinancialaccount.ID = "";//اختيارى
-                // inv.paymentmeans.payeefinancialaccount.paymentnote = "Payment by credit";//اختيارى
-                //بيانات البائع
-                PaymentMeans paymentMeans = new PaymentMeans();
-                paymentMeans.PaymentMeansCode = invoiceData.PaymentDetails.Type;
-                paymentMeans.InstructionNote = invoiceData.PaymentDetails.InstructionNote;
-                inv.paymentmeans.Add(paymentMeans);
-
-                inv.delivery.ActualDeliveryDate = invoiceData.ActualDeliveryDate;
-                inv.delivery.LatestDeliveryDate = invoiceData.LatestDeliveryDate;
-
-                AccountingSupplierParty supplierParty = InvoiceHelper.CreateSupplierParty(
-                    companyInfo.PartyId.ToString(), companyInfo.SchemeID, companyInfo.StreetName,
-                    companyInfo.AdditionalStreetName, companyInfo.BuildingNumber,
-                    companyInfo.PlotIdentification, companyInfo.CityName, companyInfo.PostalZone,
-                    companyInfo.CountrySubentity,
-                    companyInfo.CitySubdivisionName, companyInfo.IdentificationCode, companyInfo.RegistrationName,
-                    companyInfo.taxRegistrationNumber);
-
-                inv.SupplierParty = supplierParty;
-
-                AccountingCustomerParty customerParty = InvoiceHelper.CreateCustomerParty(
-                    invoiceData.CustomerInformation.CommercialNumber,
-                    invoiceData.CustomerInformation.CommercialNumberType,
-                    invoiceData.CustomerInformation.Address.StreetName,
-                    invoiceData.CustomerInformation.Address.AdditionalStreetName,
-                    invoiceData.CustomerInformation.Address.BuildingNumber,
-                    invoiceData.CustomerInformation.Address.PlotIdentification,
-                    invoiceData.CustomerInformation.Address.CityName,
-                    invoiceData.CustomerInformation.Address.PostalZone,
-                    invoiceData.CustomerInformation.Address.CountrySubentity,
-                    invoiceData.CustomerInformation.Address.CitySubdivisionName,
-                    invoiceData.CustomerInformation.Address.IdentificationCode,
-                    invoiceData.CustomerInformation.RegistrationName,
-                    invoiceData.CustomerInformation.RegistrationNumber
-                );
-
-                inv.CustomerParty = customerParty;
-
-                AllowanceCharge allowancecharge = new AllowanceCharge();
-
-                allowancecharge.taxCategory.ID = invoiceData.AllowanceCharge.TaxCategoryId;
-                allowancecharge.taxCategory.Percent = invoiceData.AllowanceCharge.TaxCategoryPercent;
-
-                allowancecharge.Amount = invoiceData.AllowanceCharge.TaxCategoryId.Equals("S")
-                    ? 0
-                    : invoiceData.AllowanceCharge.Amount;
-
-                allowancecharge.AllowanceChargeReason = invoiceData.AllowanceCharge.Reason;
-                inv.allowanceCharges.Add(allowancecharge);
-
-                /*inv.legalMonetaryTotal.PrepaidAmount = invoiceData.LegalTotal.PrepaidAmount;*/
-
-
-                List<object> invoItems = new List<object>();
-
-                foreach (var invoiceItem in invoiceData.InvoiceItems)
+                foreach (var invoiceItem in invoiceData.InvoiceItems!)
                 {
                     InvoiceLine invoiceLine = InvoiceHelper.CreateInvoiceLine(
                         invoiceItem.Name, invoiceItem.Quantity, invoiceItem.BaseQuantity,
@@ -505,7 +423,6 @@ namespace ZATCA_V2.Controllers
                 inv.cSIDInfo.CertPem = companyCredentials.Certificate;
                 inv.cSIDInfo.PrivateKey = companyCredentials.PrivateKey;
 
-                SignedInvoice signedInvoice = null;
                 res = ubl.GenerateInvoiceXML(inv, Directory.GetCurrentDirectory());
                 if (res.IsValid)
                 {
@@ -522,19 +439,7 @@ namespace ZATCA_V2.Controllers
                     //return BadRequest(res);
                 }
 
-                signedInvoice = new SignedInvoice
-                {
-                    UUID = res.UUID,
-                    InvoiceHash = res.InvoiceHash,
-                    InvoiceType = "Standard",
-                    Amount = Convert.ToDecimal(res.TaxExclusiveAmount),
-                    Tax = Convert.ToDecimal(res.TaxAmount),
-                    SingedXML = res.SingedXML,
-                    EncodedInvoice = res.EncodedInvoice,
-                    QRCode = res.QRCode,
-                    SingedXMLFileName = res.SingedXMLFileName,
-                    CompanyId = company.Id,
-                };
+                SignedInvoice signedInvoice = CreateSignedInvoice(res, company);
 
 
                 InvoiceReportingRequest invrequestbody = new InvoiceReportingRequest();
@@ -543,11 +448,7 @@ namespace ZATCA_V2.Controllers
                 invrequestbody.invoiceHash = res.InvoiceHash;
                 invrequestbody.uuid = res.UUID;
                 InvoiceReportingResponse invoicereportingmodel =
-                    apireqlogic.CallComplianceInvoiceAPI(companyCredentials.SecretToken, companyCredentials.Secret,
-                        invrequestbody);
-                //for production
-
-                //InvoiceClearanceResponse invoicereportingmodel = apireqlogic.CallClearanceAPI(Utility.ToBase64Encode(inv.cSIDInfo.CertPem), "cuqeJ5yQPoGInAF4MrynTQYOIwAYXN1jhpjFgRkga04=", invrequestbody);
+                    await CallComplianceInvoiceAPI(apireqlogic, companyCredentials, res);
 
                 if (string.IsNullOrEmpty(invoicereportingmodel.ErrorMessage))
                 {
@@ -556,23 +457,7 @@ namespace ZATCA_V2.Controllers
                     responses.Add(new
                     {
                         ZATCA = invoicereportingmodel,
-                        Res = new
-                        {
-                            res.InvoiceHash,
-                            res.UUID,
-                            res.PIH,
-                            res.QRCode,
-                            res.LineExtensionAmount,
-                            res.TaxExclusiveAmount,
-                            res.TaxInclusiveAmount,
-                            res.AllowanceTotalAmount,
-                            res.ChargeTotalAmount,
-                            res.PayableAmount,
-                            res.PrepaidAmount,
-                            res.TaxAmount,
-                            res.EncodedInvoice,
-
-                        }
+                        Res = ExtractInvoiceDetails(res)
                     });
                 }
                 else
@@ -763,6 +648,131 @@ namespace ZATCA_V2.Controllers
             {
                 return Ok(invoicereportingmodel);
             }
+        }
+
+        private Invoice CreateMainInvoice(InvoiceType invoicesType, InvoiceData invoiceData, CompanyInfo companyInfo)
+        {
+            Invoice inv = new Invoice();
+            inv.ID = invoiceData.Id;
+            inv.IssueDate = invoiceData.IssueDate;
+            inv.IssueTime = invoiceData.IssueTime;
+
+            inv.invoiceTypeCode.id =
+                invoicesType.Id; // Use the parameter 'invoicesType' instead of 'bulkInvoiceRequest.InvoicesType'
+
+            inv.invoiceTypeCode.Name = invoicesType.Name;
+            inv.DocumentCurrencyCode = invoicesType.DocumentCurrencyCode;
+
+            inv.TaxCurrencyCode = invoicesType.TaxCurrencyCode;
+
+            inv.billingReference.InvoiceDocumentReferenceID = invoiceData.InvoiceDocumentReferenceID;
+
+            inv.AdditionalDocumentReferencePIH.EmbeddedDocumentBinaryObject =
+                "NWZlY2ViNjZmZmM4NmYzOGQ5NTI3ODZjNmQ2OTZjNzljMmRiYzIzOWRkNGU5MWI0NjcyOWQ3M2EyN2ZiNTdlOQ==";
+
+            inv.AdditionalDocumentReferenceICV.UUID = invoiceData.AddtionalId;
+
+            PaymentMeans paymentMeans = new PaymentMeans();
+            paymentMeans.PaymentMeansCode = invoiceData.PaymentDetails.Type;
+            paymentMeans.InstructionNote = invoiceData.PaymentDetails.InstructionNote;
+            inv.paymentmeans.Add(paymentMeans);
+
+            inv.delivery.ActualDeliveryDate = invoiceData.ActualDeliveryDate;
+            inv.delivery.LatestDeliveryDate = invoiceData.LatestDeliveryDate;
+
+            AccountingSupplierParty supplierParty = InvoiceHelper.CreateSupplierParty(
+                companyInfo.PartyId.ToString(), companyInfo.SchemeID, companyInfo.StreetName,
+                companyInfo.AdditionalStreetName, companyInfo.BuildingNumber,
+                companyInfo.PlotIdentification, companyInfo.CityName, companyInfo.PostalZone,
+                companyInfo.CountrySubentity,
+                companyInfo.CitySubdivisionName, companyInfo.IdentificationCode, companyInfo.RegistrationName,
+                companyInfo.taxRegistrationNumber);
+
+            inv.SupplierParty = supplierParty;
+
+            AccountingCustomerParty customerParty = InvoiceHelper.CreateCustomerParty(
+                invoiceData.CustomerInformation.CommercialNumber,
+                invoiceData.CustomerInformation.CommercialNumberType,
+                invoiceData.CustomerInformation.Address.StreetName,
+                invoiceData.CustomerInformation.Address.AdditionalStreetName,
+                invoiceData.CustomerInformation.Address.BuildingNumber,
+                invoiceData.CustomerInformation.Address.PlotIdentification,
+                invoiceData.CustomerInformation.Address.CityName,
+                invoiceData.CustomerInformation.Address.PostalZone,
+                invoiceData.CustomerInformation.Address.CountrySubentity,
+                invoiceData.CustomerInformation.Address.CitySubdivisionName,
+                invoiceData.CustomerInformation.Address.IdentificationCode,
+                invoiceData.CustomerInformation.RegistrationName,
+                invoiceData.CustomerInformation.RegistrationNumber
+            );
+
+            inv.CustomerParty = customerParty;
+
+            AllowanceCharge allowancecharge = new AllowanceCharge();
+
+            allowancecharge.taxCategory.ID = invoiceData.AllowanceCharge.TaxCategoryId;
+            allowancecharge.taxCategory.Percent = invoiceData.AllowanceCharge.TaxCategoryPercent;
+
+            allowancecharge.Amount = invoiceData.AllowanceCharge.TaxCategoryId.Equals("S")
+                ? 0
+                : invoiceData.AllowanceCharge.Amount;
+
+            allowancecharge.AllowanceChargeReason = invoiceData.AllowanceCharge.Reason;
+            inv.allowanceCharges.Add(allowancecharge);
+
+            return inv;
+        }
+
+
+        private object ExtractInvoiceDetails(Result res)
+        {
+            return new
+            {
+                res.InvoiceHash,
+                res.UUID,
+                res.PIH,
+                res.QRCode,
+                res.LineExtensionAmount,
+                res.TaxExclusiveAmount,
+                res.TaxInclusiveAmount,
+                res.AllowanceTotalAmount,
+                res.ChargeTotalAmount,
+                res.PayableAmount,
+                res.PrepaidAmount,
+                res.TaxAmount,
+                res.EncodedInvoice
+            };
+        }
+
+        private async Task<InvoiceReportingResponse> CallComplianceInvoiceAPI(ApiRequestLogic apireqlogic,
+            CompanyCredentials companyCredentials, Result res)
+        {
+            InvoiceReportingRequest invrequestbody = new InvoiceReportingRequest
+            {
+                invoice = res.EncodedInvoice,
+                invoiceHash = res.InvoiceHash,
+                uuid = res.UUID
+            };
+
+            return apireqlogic.CallComplianceInvoiceAPI(companyCredentials.SecretToken, companyCredentials.Secret,
+                invrequestbody);
+        }
+
+        private SignedInvoice CreateSignedInvoice(Result res, Company company)
+        {
+            return new SignedInvoice
+            {
+                UUID = res.UUID,
+                InvoiceHash = res.InvoiceHash,
+                InvoiceType = "Standard",
+                Amount = Convert.ToDecimal(res.TaxExclusiveAmount),
+                Tax = Convert.ToDecimal(res.TaxAmount),
+                SingedXML = res.SingedXML,
+                EncodedInvoice = res.EncodedInvoice,
+                QRCode = res.QRCode,
+                SingedXMLFileName = res.SingedXMLFileName,
+                CompanyId = company.Id,
+            };
         }
     }
 }
