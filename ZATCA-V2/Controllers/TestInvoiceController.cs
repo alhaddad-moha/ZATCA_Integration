@@ -468,8 +468,8 @@ namespace ZATCA_V2.Controllers
 
             return Ok(responses);
         }
-
-
+        
+        
         [HttpPost("single-standard-dynamic")]
         public async Task<IActionResult> GenerateSingleDynamicStandard(BulkInvoiceRequest bulkInvoiceRequest)
         {
