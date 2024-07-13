@@ -52,7 +52,7 @@
         "DB_PASSWORD": "stage_password"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "https://your-staging-url"
+      "applicationUrl": "https://localhost:7074;http://localhost:5074"
     }
   },
   "$schema": "https://json.schemastore.org/launchsettings.json",
