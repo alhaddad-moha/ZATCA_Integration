@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2">
   <cbc:ProfileID>reporting:1.0</cbc:ProfileID>
-  <cbc:ID>1230</cbc:ID>
-  <cbc:UUID>531e0b30-9730-4d91-8fd9-c21bc6d18e77</cbc:UUID>
-  <cbc:IssueDate>2023-05-14</cbc:IssueDate>
-  <cbc:IssueTime>11:25:55</cbc:IssueTime>
-  <cbc:InvoiceTypeCode name="0200000">388</cbc:InvoiceTypeCode>
+  <cbc:ID>155</cbc:ID>
+  <cbc:UUID>7fa5e3d1-e46d-4003-b554-39df37e0f549</cbc:UUID>
+  <cbc:IssueDate>2022-02-15</cbc:IssueDate>
+  <cbc:IssueTime>12:34:56</cbc:IssueTime>
+  <cbc:InvoiceTypeCode name="0100000">388</cbc:InvoiceTypeCode>
   <cbc:DocumentCurrencyCode>SAR</cbc:DocumentCurrencyCode>
   <cbc:TaxCurrencyCode>SAR</cbc:TaxCurrencyCode>
   <cbc:LineCountNumeric>2</cbc:LineCountNumeric>
   <cac:AdditionalDocumentReference>
     <cbc:ID>ICV</cbc:ID>
-    <cbc:UUID>123456</cbc:UUID>
+    <cbc:UUID>457</cbc:UUID>
   </cac:AdditionalDocumentReference>
   <cac:AdditionalDocumentReference>
     <cbc:ID>PIH</cbc:ID>
@@ -25,14 +25,13 @@
         <cbc:ID schemeID="CRN">1515325162</cbc:ID>
       </cac:PartyIdentification>
       <cac:PostalAddress>
-        <cbc:StreetName>streetnumber</cbc:StreetName>
-        <cbc:AdditionalStreetName>ststtstst</cbc:AdditionalStreetName>
+        <cbc:StreetName>Kemarat Street,</cbc:StreetName>
         <cbc:BuildingNumber>3724</cbc:BuildingNumber>
         <cbc:PlotIdentification>9833</cbc:PlotIdentification>
-        <cbc:CitySubdivisionName>flassk</cbc:CitySubdivisionName>
-        <cbc:CityName>gaddah</cbc:CityName>
+        <cbc:CitySubdivisionName>Alfalah</cbc:CitySubdivisionName>
+        <cbc:CityName>جدة</cbc:CityName>
         <cbc:PostalZone>15385</cbc:PostalZone>
-        <cbc:CountrySubentity>makka</cbc:CountrySubentity>
+        <cbc:CountrySubentity>Makkah</cbc:CountrySubentity>
         <cac:Country>
           <cbc:IdentificationCode>SA</cbc:IdentificationCode>
         </cac:Country>
@@ -44,17 +43,17 @@
         </cac:TaxScheme>
       </cac:PartyTaxScheme>
       <cac:PartyLegalEntity>
-        <cbc:RegistrationName>Mod Co</cbc:RegistrationName>
+        <cbc:RegistrationName>Alhaddad Mod</cbc:RegistrationName>
       </cac:PartyLegalEntity>
     </cac:Party>
   </cac:AccountingSupplierParty>
   <cac:AccountingCustomerParty>
     <cac:Party>
       <cac:PartyIdentification>
-        <cbc:ID schemeID="CRN">123456</cbc:ID>
+        <cbc:ID schemeID="CRN">123456789</cbc:ID>
       </cac:PartyIdentification>
       <cac:PostalAddress>
-        <cbc:StreetName>Kemarat Street,</cbc:StreetName>
+        <cbc:StreetName>Kemarat Street</cbc:StreetName>
         <cbc:BuildingNumber>3724</cbc:BuildingNumber>
         <cbc:PlotIdentification>9833</cbc:PlotIdentification>
         <cbc:CitySubdivisionName>Alfalah</cbc:CitySubdivisionName>
@@ -72,26 +71,22 @@
         </cac:TaxScheme>
       </cac:PartyTaxScheme>
       <cac:PartyLegalEntity>
-        <cbc:RegistrationName>buyyername</cbc:RegistrationName>
+        <cbc:RegistrationName>First Shop</cbc:RegistrationName>
       </cac:PartyLegalEntity>
     </cac:Party>
   </cac:AccountingCustomerParty>
   <cac:Delivery>
-    <cbc:ActualDeliveryDate>2022-10-22</cbc:ActualDeliveryDate>
-    <cbc:LatestDeliveryDate>2022-10-23</cbc:LatestDeliveryDate>
+    <cbc:ActualDeliveryDate>2022-02-20</cbc:ActualDeliveryDate>
+    <cbc:LatestDeliveryDate>2022-02-25</cbc:LatestDeliveryDate>
   </cac:Delivery>
   <cac:PaymentMeans>
     <cbc:PaymentMeansCode>10</cbc:PaymentMeansCode>
   </cac:PaymentMeans>
-  <cac:PaymentMeans>
-    <cbc:PaymentMeansCode>42</cbc:PaymentMeansCode>
-    <cbc:InstructionNote>Payment Notes</cbc:InstructionNote>
-  </cac:PaymentMeans>
   <cac:TaxTotal>
-    <cbc:TaxAmount currencyID="SAR">9.08</cbc:TaxAmount>
+    <cbc:TaxAmount currencyID="SAR">134.60</cbc:TaxAmount>
     <cac:TaxSubtotal>
-      <cbc:TaxableAmount currencyID="SAR">60.50</cbc:TaxableAmount>
-      <cbc:TaxAmount currencyID="SAR">9.08</cbc:TaxAmount>
+      <cbc:TaxableAmount currencyID="SAR">897.34</cbc:TaxableAmount>
+      <cbc:TaxAmount currencyID="SAR">134.60</cbc:TaxAmount>
       <cac:TaxCategory>
         <cbc:ID>S</cbc:ID>
         <cbc:Percent>15.00</cbc:Percent>
@@ -102,24 +97,23 @@
     </cac:TaxSubtotal>
   </cac:TaxTotal>
   <cac:TaxTotal>
-    <cbc:TaxAmount currencyID="SAR">9.08</cbc:TaxAmount>
+    <cbc:TaxAmount currencyID="SAR">134.60</cbc:TaxAmount>
   </cac:TaxTotal>
   <cac:LegalMonetaryTotal>
-    <cbc:LineExtensionAmount currencyID="SAR">60.50</cbc:LineExtensionAmount>
-    <cbc:TaxExclusiveAmount currencyID="SAR">60.50</cbc:TaxExclusiveAmount>
-    <cbc:TaxInclusiveAmount currencyID="SAR">69.58</cbc:TaxInclusiveAmount>
+    <cbc:LineExtensionAmount currencyID="SAR">897.34</cbc:LineExtensionAmount>
+    <cbc:TaxExclusiveAmount currencyID="SAR">897.34</cbc:TaxExclusiveAmount>
+    <cbc:TaxInclusiveAmount currencyID="SAR">1031.94</cbc:TaxInclusiveAmount>
     <cbc:AllowanceTotalAmount currencyID="SAR">0.00</cbc:AllowanceTotalAmount>
     <cbc:ChargeTotalAmount currencyID="SAR">0.00</cbc:ChargeTotalAmount>
-    <cbc:PrepaidAmount currencyID="SAR">46.00</cbc:PrepaidAmount>
-    <cbc:PayableAmount currencyID="SAR">23.58</cbc:PayableAmount>
+    <cbc:PayableAmount currencyID="SAR">1031.94</cbc:PayableAmount>
   </cac:LegalMonetaryTotal>
   <cac:InvoiceLine>
     <cbc:ID>1</cbc:ID>
-    <cbc:InvoicedQuantity>20</cbc:InvoicedQuantity>
-    <cbc:LineExtensionAmount currencyID="SAR">60.50</cbc:LineExtensionAmount>
+    <cbc:InvoicedQuantity>2</cbc:InvoicedQuantity>
+    <cbc:LineExtensionAmount currencyID="SAR">396.68</cbc:LineExtensionAmount>
     <cac:TaxTotal>
-      <cbc:TaxAmount currencyID="SAR">9.08</cbc:TaxAmount>
-      <cbc:RoundingAmount currencyID="SAR">69.58</cbc:RoundingAmount>
+      <cbc:TaxAmount currencyID="SAR">59.50</cbc:TaxAmount>
+      <cbc:RoundingAmount currencyID="SAR">456.18</cbc:RoundingAmount>
     </cac:TaxTotal>
     <cac:Item>
       <cbc:Name>Item 1</cbc:Name>
@@ -132,43 +126,20 @@
       </cac:ClassifiedTaxCategory>
     </cac:Item>
     <cac:Price>
-      <cbc:PriceAmount currencyID="SAR">60.50</cbc:PriceAmount>
-      <cbc:BaseQuantity>20.00</cbc:BaseQuantity>
+      <cbc:PriceAmount currencyID="SAR">396.68</cbc:PriceAmount>
+      <cbc:BaseQuantity>2.00</cbc:BaseQuantity>
     </cac:Price>
   </cac:InvoiceLine>
   <cac:InvoiceLine>
     <cbc:ID>2</cbc:ID>
-    <cbc:InvoicedQuantity>1</cbc:InvoicedQuantity>
-    <cbc:LineExtensionAmount currencyID="SAR">0.00</cbc:LineExtensionAmount>
-    <cac:DocumentReference>
-      <cbc:ID>1253m</cbc:ID>
-      <cbc:IssueDate>2023-05-10</cbc:IssueDate>
-      <cbc:IssueTime>11:25:55</cbc:IssueTime>
-      <cbc:DocumentTypeCode>386</cbc:DocumentTypeCode>
-    </cac:DocumentReference>
-    <cac:DocumentReference>
-      <cbc:ID>1252523m</cbc:ID>
-      <cbc:IssueDate>2023-05-11</cbc:IssueDate>
-      <cbc:IssueTime>11:25:55</cbc:IssueTime>
-      <cbc:DocumentTypeCode>386</cbc:DocumentTypeCode>
-    </cac:DocumentReference>
+    <cbc:InvoicedQuantity>10</cbc:InvoicedQuantity>
+    <cbc:LineExtensionAmount currencyID="SAR">500.66</cbc:LineExtensionAmount>
     <cac:TaxTotal>
-      <cbc:TaxAmount currencyID="SAR">0.00</cbc:TaxAmount>
-      <cbc:RoundingAmount currencyID="SAR">0.00</cbc:RoundingAmount>
-      <cac:TaxSubtotal>
-        <cbc:TaxableAmount currencyID="SAR">40.00</cbc:TaxableAmount>
-        <cbc:TaxAmount currencyID="SAR">6.00</cbc:TaxAmount>
-        <cac:TaxCategory>
-          <cbc:ID>S</cbc:ID>
-          <cbc:Percent>15.00</cbc:Percent>
-          <cac:TaxScheme>
-            <cbc:ID>VAT</cbc:ID>
-          </cac:TaxScheme>
-        </cac:TaxCategory>
-      </cac:TaxSubtotal>
+      <cbc:TaxAmount currencyID="SAR">75.10</cbc:TaxAmount>
+      <cbc:RoundingAmount currencyID="SAR">575.76</cbc:RoundingAmount>
     </cac:TaxTotal>
     <cac:Item>
-      <cbc:Name>Prepayment adjustment</cbc:Name>
+      <cbc:Name>Item 2</cbc:Name>
       <cac:ClassifiedTaxCategory>
         <cbc:ID>S</cbc:ID>
         <cbc:Percent>15.00</cbc:Percent>
@@ -178,8 +149,8 @@
       </cac:ClassifiedTaxCategory>
     </cac:Item>
     <cac:Price>
-      <cbc:PriceAmount currencyID="SAR">0.00</cbc:PriceAmount>
-      <cbc:BaseQuantity>1.00</cbc:BaseQuantity>
+      <cbc:PriceAmount currencyID="SAR">500.66</cbc:PriceAmount>
+      <cbc:BaseQuantity>10.00</cbc:BaseQuantity>
     </cac:Price>
   </cac:InvoiceLine>
 </Invoice>
