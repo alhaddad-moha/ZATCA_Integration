@@ -42,29 +42,30 @@
 
   <ItemGroup>
     <Reference Include="BouncyCastle.Crypto">
-      <HintPath>..\..\..\..\Downloads\Compressed\ZatcaIntegration_CSharp_TrailVersion_2\ZatcaIntegration\ZatcaIntegration\bin\Debug\BouncyCastle.Crypto.dll</HintPath>
+      <HintPath>libs\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.Core">
-      <HintPath>..\..\..\..\Downloads\Compressed\ZatcaIntegration_CSharp_TrailVersion_2\ZatcaIntegration\ZatcaIntegration\bin\Debug\IKVM.OpenJDK.Core.dll</HintPath>
+      <HintPath>libs\IKVM.OpenJDK.Core.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.Text">
-      <HintPath>..\..\..\..\Downloads\Compressed\ZatcaIntegration_CSharp_TrailVersion_2\ZatcaIntegration\ZatcaIntegration\bin\Debug\IKVM.OpenJDK.Text.dll</HintPath>
+      <HintPath>libs\IKVM.OpenJDK.Text.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.Util">
-      <HintPath>..\..\..\..\Downloads\Compressed\ZatcaIntegration_CSharp_TrailVersion_2\ZatcaIntegration\ZatcaIntegration\bin\Debug\IKVM.OpenJDK.Util.dll</HintPath>
+      <HintPath>libs\IKVM.OpenJDK.Util.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.XML.API">
-      <HintPath>..\..\..\..\Downloads\Compressed\ZatcaIntegration_CSharp_TrailVersion_2\ZatcaIntegration\ZatcaIntegration\bin\Debug\IKVM.OpenJDK.XML.API.dll</HintPath>
+      <HintPath>libs\IKVM.OpenJDK.XML.API.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.Runtime">
-      <HintPath>..\..\..\..\Downloads\Compressed\ZatcaIntegration_CSharp_TrailVersion_2\ZatcaIntegration\ZatcaIntegration\bin\Debug\IKVM.Runtime.dll</HintPath>
+      <HintPath>libs\IKVM.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="saxon-he-10.8">
-      <HintPath>..\..\..\..\Downloads\Compressed\ZatcaIntegration_CSharp_TrailVersion_2\ZatcaIntegration\ZatcaIntegration\bin\Debug\saxon-he-10.8.dll</HintPath>
+      <HintPath>libs\saxon-he-10.8.dll</HintPath>
     </Reference>
     <Reference Include="ZatcaIntegrationSDK">
-      <HintPath>H:\All Downloads\Compressed\ZatcaIntegration_CSharp_TrailVersion_2\ZatcaIntegration\ZatcaIntegration\bin\Debug\ZatcaIntegrationSDK.dll</HintPath>
+      <HintPath>libs\ZatcaIntegrationSDK.dll</HintPath>
     </Reference>
   </ItemGroup>
+
 
 </Project>
