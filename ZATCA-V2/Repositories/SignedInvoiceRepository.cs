@@ -56,5 +56,13 @@ namespace ZATCA_V2.Repositories
                 .OrderByDescending(cc => cc.CreatedAt)
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<List<SignedInvoice?>> GetAllByCompanyId(int companyId)
+        {
+            return await _context.SignedInvoice
+                .Where(cc => cc.CompanyId == companyId)
+                .OrderByDescending(cc => cc.CreatedAt)
+                .ToListAsync();
+        }
     }
 }

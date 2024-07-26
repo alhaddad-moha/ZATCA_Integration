@@ -35,23 +35,30 @@ namespace ZATCA_V2.Controllers
         [HttpPost("generateCSR/{companyId}")]
         public async Task<IActionResult> GenerateCsr(int companyId)
         {
-            var certificateConfig = new CertificateConfiguration
+            try
             {
-                C = "SA",
-                OU = "Wosul",
-                O = "Wosul SA",
-                CN = "Wosul-1",
-                UID = "311111111101113",
-                Title = "1100",
-                RegisteredAddress = "Riyadh",
-                BusinessCategory = "Technology",
-                EmailAddress = "mohammed@wosul.sa"
-            };
+                var certificateConfig = new CertificateConfiguration
+                {
+                    C = "SA",
+                    OU = "Wosul",
+                    O = "Wosul SA",
+                    CN = "Wosul-1",
+                    UID = "311111111101113",
+                    Title = "1100",
+                    RegisteredAddress = "Riyadh",
+                    BusinessCategory = "Technology",
+                    EmailAddress = "mohammed@wosul.sa"
+                };
 
-            string configFilePath = $"{Constants.ConfigBasePath}/configuration{companyId}.cnf";
+                string configFilePath = $"{Constants.ConfigBasePath}/configuration{companyId}.cnf";
 
-            Creator.WriteConfigurationFile(configFilePath, certificateConfig);
-            return Ok("Generated Successfully");
+                Creator.WriteConfigurationFile(configFilePath, certificateConfig);
+                return Ok(new { message = "CSR generated successfully.", status = 201 });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message, status = 500 });
+            }
         }
 
         [HttpPost("generateKeys/{companyId}")]
@@ -111,11 +118,12 @@ namespace ZATCA_V2.Controllers
                 */
                 string encodedCsr = Helper.EncodeToBase64(generatedCsr);
                 Helper.SaveToFile(encodedCsr, filteredCsrPath);
-                return Ok("Private key, public key, and CSR generated successfully.");
+                return Ok(new
+                    { message = "Private key, public key, and CSR generated successfully.", status =201 });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal Server Error: {ex.Message}");
+                return StatusCode(500, new { message = $"Internal Server Error: {ex.Message}", status = 500 });
             }
         }
 
@@ -154,20 +162,26 @@ namespace ZATCA_V2.Controllers
 
                 company.CompanyCredentials.Add(companyCredentials);
 
-                await _companyCredentialsRepository.Create(companyCredentials); 
+                await _companyCredentialsRepository.Create(companyCredentials);
 
-                await _companyRepository.Update(company); 
+                await _companyRepository.Update(company);
 
                 return Ok(new
                 {
-                    MainRes = jsonResponse,
-                    DecodedCertificate = decodedCertificate,
+                    message = "CSID generated successfully.",
+                    status = 201,
+                    mainResponse = jsonResponse,
+                    decodedCertificate = decodedCertificate
                 });
             }
             catch (Exception ex)
             {
                 return BadRequest(new
-                    { Error = $"An error occurred: {ex.Message}", InnerException = ex.InnerException?.Message });
+                {
+                    message = $"An error occurred: {ex.Message}",
+                    status = "error",
+                    innerException = ex.InnerException?.Message
+                });
             }
         }
 

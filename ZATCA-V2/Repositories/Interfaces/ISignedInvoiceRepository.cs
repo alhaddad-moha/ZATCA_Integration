@@ -11,5 +11,6 @@ namespace ZATCA_V2.Repositories.Interfaces
         Task Delete(int id);
 
         Task<SignedInvoice?> GetLatestByCompanyId(int companyId);
+        Task<List<SignedInvoice?>> GetAllByCompanyId(int companyId);
     }
 }
