@@ -400,7 +400,7 @@ namespace ZATCA_V2.Controllers
                 {
                     InvoiceLine invoiceLine = InvoiceHelper.CreateInvoiceLine(
                         invoiceItem.Name, invoiceItem.Quantity, invoiceItem.BaseQuantity,
-                        invoiceItem.Price, inv.allowanceCharges, invoiceItem.VatCategory,
+                        invoiceItem.Price, inv.allowanceCharges, invoiceItem.TaxCategory,
                         invoiceItem.VatPercentage, invoiceItem.IsIncludingVat, invoiceItem.TaxExemptionReasonCode,
                         invoiceItem.TaxExemptionReason);
 
@@ -544,10 +544,10 @@ namespace ZATCA_V2.Controllers
 
             AllowanceCharge allowancecharge = new AllowanceCharge();
 
-            allowancecharge.taxCategory.ID = invoiceData.AllowanceCharge.TaxCategoryId;
+            allowancecharge.taxCategory.ID = invoiceData.AllowanceCharge.TaxCategory;
             allowancecharge.taxCategory.Percent = invoiceData.AllowanceCharge.TaxCategoryPercent;
 
-            allowancecharge.Amount = invoiceData.AllowanceCharge.TaxCategoryId.Equals("S")
+            allowancecharge.Amount = invoiceData.AllowanceCharge.TaxCategory.Equals("S")
                 ? 0
                 : invoiceData.AllowanceCharge.Amount;
 
@@ -562,7 +562,7 @@ namespace ZATCA_V2.Controllers
 
             InvoiceLine invoiceLine = InvoiceHelper.CreateInvoiceLine(
                 invoiceItem.Name, invoiceItem.Quantity, invoiceItem.BaseQuantity,
-                invoiceItem.Price, inv.allowanceCharges, invoiceItem.VatCategory,
+                invoiceItem.Price, inv.allowanceCharges, invoiceItem.TaxCategory,
                 invoiceItem.VatPercentage, invoiceItem.IsIncludingVat, invoiceItem.TaxExemptionReasonCode,
                 invoiceItem.TaxExemptionReason);
 
@@ -686,10 +686,10 @@ namespace ZATCA_V2.Controllers
 
             AllowanceCharge allowancecharge = new AllowanceCharge();
 
-            allowancecharge.taxCategory.ID = invoiceData.AllowanceCharge.TaxCategoryId;
+            allowancecharge.taxCategory.ID = invoiceData.AllowanceCharge.TaxCategory;
             allowancecharge.taxCategory.Percent = invoiceData.AllowanceCharge.TaxCategoryPercent;
 
-            allowancecharge.Amount = invoiceData.AllowanceCharge.TaxCategoryId.Equals("S")
+            allowancecharge.Amount = invoiceData.AllowanceCharge.TaxCategory.Equals("S")
                 ? 0
                 : invoiceData.AllowanceCharge.Amount;
 

@@ -6,6 +6,10 @@ using ZATCA_V2.Repositories;
 using ZATCA_V2.Middlewares;
 using ZATCA_V2.Repositories.Interfaces;
 using ZATCA_V2.ZATCA;
+using ZATCA_V2.Helpers;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +27,7 @@ builder.Services.AddDbContext<DataContext>(options =>
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     logger.LogInformation("Default connection string from appsettings: {ConnectionString}", connectionString);
 
-    if (builder.Environment.IsDevelopment() == false)
+    if (!builder.Environment.IsDevelopment())
     {
         logger.LogInformation("Running in a non-Development environment");
 
@@ -77,13 +81,38 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Add health checks
+builder.Services.AddHealthChecks()
+    .AddCheck("zatca_health_check", new ZatcaHealthCheck())
+    .AddCheck<SqlHealthCheck>("sql_health_check", HealthStatus.Unhealthy);
+
+builder.Services.AddHealthChecksUI(opt =>
+{
+    opt.SetEvaluationTimeInSeconds(15); // Time in seconds between check evaluations
+    opt.MaximumHistoryEntriesPerEndpoint(60); // Maximum history of checks
+    opt.SetApiMaxActiveRequests(1); // API requests concurrency
+    opt.AddHealthCheckEndpoint("Basic Health Check", "/health"); // Map health check endpoint
+})
+.AddInMemoryStorage();
 
 var app = builder.Build();
+
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    Predicate = _ => true,
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+
+app.MapHealthChecksUI(setup =>
+{
+    setup.UIPath = "/health-ui"; // URL for the health check UI
+    setup.ApiPath = "/health-ui-api"; // API for the health check UI
+});
 
 logger.LogInformation("Running in {Environment} environment", app.Environment.EnvironmentName);
 
 // Add the API key middleware
-app.UseMiddleware<ApiKeyMiddleware>();
+//app.UseMiddleware<ApiKeyMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

@@ -164,174 +164,192 @@ namespace ZATCA_V2.Controllers
         [HttpPost("sign-single")]
         public async Task<IActionResult> SignSingleInvoice(SingleInvoiceRequest singleInvoiceRequest)
         {
-            var company = await _companyRepository.GetById(singleInvoiceRequest.CompanyId);
-            if (company == null)
+            try
             {
-                return BadRequest("Company Not Found");
-            }
+                var company = await _companyRepository.GetById(singleInvoiceRequest.CompanyId);
+                if (company == null)
+                {
+                    return BadRequest("Company Not Found");
+                }
 
-            var companyInfo = await _companyInfoRepository.GetByCompanyId(singleInvoiceRequest.CompanyId);
-            var companyCredentials =
-                await _companyCredentialsRepository.GetLatestByCompanyId(singleInvoiceRequest.CompanyId);
+                var companyInfo = await _companyInfoRepository.GetByCompanyId(singleInvoiceRequest.CompanyId);
+                var companyCredentials =
+                    await _companyCredentialsRepository.GetLatestByCompanyId(singleInvoiceRequest.CompanyId);
 
+                if (companyCredentials == null)
+                {
+                    return BadRequest("companyCredentials Not Found");
+                }
 
-            if (companyCredentials == null)
-            {
-                return BadRequest("companyCredentials Not Found");
-            }
+                if (singleInvoiceRequest.Invoice == null)
+                {
+                    return BadRequest("Invoice Data Not Provided");
+                }
 
-            if (singleInvoiceRequest.Invoice == null)
-            {
-                return BadRequest("Invoice Data Not Provided");
-            }
+                var latestInvoice = await _signedInvoiceRepository.GetLatestByCompanyId(singleInvoiceRequest.CompanyId);
+                string invoiceHash = latestInvoice == null ? "112345" : latestInvoice.InvoiceHash;
+                UBLXML ubl = new UBLXML();
+                ApiRequestLogic apireqlogic = new ApiRequestLogic(Mode.developer);
 
-            var latestInvoice = await _signedInvoiceRepository.GetLatestByCompanyId(singleInvoiceRequest.CompanyId);
-            string invoiceHash = latestInvoice == null ? "112345" : latestInvoice.InvoiceHash;
-            UBLXML ubl = new UBLXML();
-            ApiRequestLogic apireqlogic = new ApiRequestLogic(Mode.developer);
-
-            Invoice inv = CreateMainInvoice(singleInvoiceRequest.InvoiceType!, singleInvoiceRequest.Invoice,
-                companyInfo!);
-            Result res = new Result();
-
-            foreach (var invoiceItem in singleInvoiceRequest.Invoice.InvoiceItems!)
-            {
-                InvoiceLine invoiceLine = InvoiceHelper.CreateInvoiceLine(
-                    invoiceItem.Name, invoiceItem.Quantity, invoiceItem.BaseQuantity,
-                    invoiceItem.Price, inv.allowanceCharges, invoiceItem.VatCategory,
-                    invoiceItem.VatPercentage, invoiceItem.IsIncludingVat, invoiceItem.TaxExemptionReasonCode,
-                    invoiceItem.TaxExemptionReason);
-
-                inv.InvoiceLines.Add(invoiceLine);
-            }
-
-            inv.cSIDInfo.CertPem = companyCredentials.Certificate;
-            inv.cSIDInfo.PrivateKey = companyCredentials.PrivateKey;
-            inv.AdditionalDocumentReferencePIH.EmbeddedDocumentBinaryObject = invoiceHash;
-
-            res = ubl.GenerateInvoiceXML(inv, Directory.GetCurrentDirectory());
-            if (!res.IsValid)
-            {
-                return BadRequest(res);
-            }
-
-            SignedInvoice signedInvoice = CreateSignedInvoice(res, company);
-
-            InvoiceReportingRequest invrequestbody = new InvoiceReportingRequest
-            {
-                invoice = res.EncodedInvoice,
-                invoiceHash = res.InvoiceHash,
-                uuid = res.UUID
-            };
-
-            InvoiceReportingResponse invoicereportingmodel =
-                await CallComplianceInvoiceAPI(apireqlogic, companyCredentials, res);
-
-            if (!string.IsNullOrEmpty(invoicereportingmodel.ErrorMessage))
-            {
-                return BadRequest(invoicereportingmodel);
-            }
-
-            await _signedInvoiceRepository.Create(signedInvoice);
-
-            var response = new
-            {
-                ZATCA = invoicereportingmodel,
-                Res = ExtractInvoiceDetails(res)
-            };
-
-            return Ok(response);
-        }
-
-        [HttpPost("sign")]
-        public async Task<IActionResult> GenerateDynamicStandard(BulkInvoiceRequest bulkInvoiceRequest)
-        {
-            var companyInfo = await _companyInfoRepository.GetByCompanyId(bulkInvoiceRequest.companyId);
-            var company = await _companyRepository.GetById(bulkInvoiceRequest.companyId);
-            var companyCredentials =
-                await _companyCredentialsRepository.GetLatestByCompanyId(bulkInvoiceRequest.companyId);
-
-            if (company == null)
-            {
-                return BadRequest("Company Not Found");
-            }
-
-            if (companyCredentials == null)
-            {
-                return BadRequest("companyCredentials Not Found");
-            }
-
-
-            UBLXML ubl = new UBLXML();
-            ApiRequestLogic apireqlogic = new ApiRequestLogic(Mode.developer);
-
-            List<object> responses = new List<object>();
-            foreach (var invoiceData in bulkInvoiceRequest.Invoices!)
-            {
-                Invoice inv = CreateMainInvoice(bulkInvoiceRequest.InvoicesType!, invoiceData, companyInfo!);
+                Invoice inv = CreateMainInvoice(singleInvoiceRequest.InvoiceType!, singleInvoiceRequest.Invoice,
+                    companyInfo!);
                 Result res = new Result();
 
-
-                foreach (var invoiceItem in invoiceData.InvoiceItems!)
+                foreach (var invoiceItem in singleInvoiceRequest.Invoice.InvoiceItems!)
                 {
                     InvoiceLine invoiceLine = InvoiceHelper.CreateInvoiceLine(
                         invoiceItem.Name, invoiceItem.Quantity, invoiceItem.BaseQuantity,
-                        invoiceItem.Price, inv.allowanceCharges, invoiceItem.VatCategory,
+                        invoiceItem.Price, inv.allowanceCharges, invoiceItem.TaxCategory,
                         invoiceItem.VatPercentage, invoiceItem.IsIncludingVat, invoiceItem.TaxExemptionReasonCode,
                         invoiceItem.TaxExemptionReason);
 
                     inv.InvoiceLines.Add(invoiceLine);
                 }
 
-
                 inv.cSIDInfo.CertPem = companyCredentials.Certificate;
                 inv.cSIDInfo.PrivateKey = companyCredentials.PrivateKey;
+                inv.AdditionalDocumentReferencePIH.EmbeddedDocumentBinaryObject = invoiceHash;
 
                 res = ubl.GenerateInvoiceXML(inv, Directory.GetCurrentDirectory());
-                if (res.IsValid)
+                if (!res.IsValid)
                 {
-                    //return Ok(res.InvoiceHash);
-                    //return Ok(res.SingedXML);
-                    //return Ok(res.EncodedInvoice);
-                    //return Ok(res.UUID);
-                    //return Ok(res.QRCode);
-                    //return Ok(res.PIH);
-                    //return Ok(res.SingedXMLFileName);
-                }
-                else
-                {
-                    //return BadRequest(res);
+                    return BadRequest(res);
                 }
 
-                SignedInvoice signedInvoice = CreateSignedInvoice(res, company);
+                SignedInvoice signedInvoice = CreateSignedInvoice(res, company, singleInvoiceRequest.InvoiceType.Name);
 
+                InvoiceReportingRequest invrequestbody = new InvoiceReportingRequest
+                {
+                    invoice = res.EncodedInvoice,
+                    invoiceHash = res.InvoiceHash,
+                    uuid = res.UUID
+                };
 
-                InvoiceReportingRequest invrequestbody = new InvoiceReportingRequest();
-
-                invrequestbody.invoice = res.EncodedInvoice;
-                invrequestbody.invoiceHash = res.InvoiceHash;
-                invrequestbody.uuid = res.UUID;
                 InvoiceReportingResponse invoicereportingmodel =
                     await CallComplianceInvoiceAPI(apireqlogic, companyCredentials, res);
 
-                if (string.IsNullOrEmpty(invoicereportingmodel.ErrorMessage))
+                if (!string.IsNullOrEmpty(invoicereportingmodel.ErrorMessage))
                 {
-                    await _signedInvoiceRepository.Create(signedInvoice);
+                    return BadRequest(invoicereportingmodel);
+                }
 
-                    responses.Add(new
-                    {
-                        ZATCA = invoicereportingmodel,
-                        Res = ExtractInvoiceDetails(res)
-                    });
-                }
-                else
+                await _signedInvoiceRepository.Create(signedInvoice);
+
+                var response = new
                 {
-                    responses.Add(invoicereportingmodel);
-                }
+                    ZATCA = invoicereportingmodel,
+                    Res = ExtractInvoiceDetails(res)
+                };
+
+                return Ok(response);
             }
-
-            return Ok(responses);
+            catch (Exception ex)
+            {
+                // Log the exception (you might want to use a logging framework here)
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
+
+        [HttpPost("sign")]
+        public async Task<IActionResult> GenerateDynamicStandard(BulkInvoiceRequest bulkInvoiceRequest)
+        {
+            try
+            {
+                var company = await _companyRepository.GetById(bulkInvoiceRequest.companyId);
+                if (company == null)
+                {
+                    return BadRequest("Company Not Found");
+                }
+
+                var companyInfo = await _companyInfoRepository.GetByCompanyId(bulkInvoiceRequest.companyId);
+                var companyCredentials =
+                    await _companyCredentialsRepository.GetLatestByCompanyId(bulkInvoiceRequest.companyId);
+
+                if (companyCredentials == null)
+                {
+                    return BadRequest("companyCredentials Not Found");
+                }
+
+                var latestInvoice = await _signedInvoiceRepository.GetLatestByCompanyId(bulkInvoiceRequest.companyId);
+                string invoiceHash = latestInvoice == null ? "112345" : latestInvoice.InvoiceHash;
+
+                UBLXML ubl = new UBLXML();
+                ApiRequestLogic apireqlogic = new ApiRequestLogic(Mode.developer);
+
+                List<object> responses = new List<object>();
+                foreach (var invoiceData in bulkInvoiceRequest.Invoices!)
+                {
+                    Invoice inv = CreateMainInvoice(bulkInvoiceRequest.InvoicesType!, invoiceData, companyInfo!);
+                    Result res = new Result();
+
+                    foreach (var invoiceItem in invoiceData.InvoiceItems!)
+                    {
+                        InvoiceLine invoiceLine = InvoiceHelper.CreateInvoiceLine(
+                            invoiceItem.Name, invoiceItem.Quantity, invoiceItem.BaseQuantity,
+                            invoiceItem.Price, inv.allowanceCharges, invoiceItem.TaxCategory,
+                            invoiceItem.VatPercentage, invoiceItem.IsIncludingVat, invoiceItem.TaxExemptionReasonCode,
+                            invoiceItem.TaxExemptionReason);
+
+                        inv.InvoiceLines.Add(invoiceLine);
+                    }
+
+                    inv.cSIDInfo.CertPem = companyCredentials.Certificate;
+                    inv.cSIDInfo.PrivateKey = companyCredentials.PrivateKey;
+                    inv.AdditionalDocumentReferencePIH.EmbeddedDocumentBinaryObject = invoiceHash;
+
+                    res = ubl.GenerateInvoiceXML(inv, Directory.GetCurrentDirectory());
+                    if (res.IsValid)
+                    {
+                        // return Ok(res.InvoiceHash);
+                        // return Ok(res.SingedXML);
+                        // return Ok(res.EncodedInvoice);
+                        // return Ok(res.UUID);
+                        // return Ok(res.QRCode);
+                        // return Ok(res.PIH);
+                        // return Ok(res.SingedXMLFileName);
+                    }
+                    else
+                    {
+                        return BadRequest(res);
+                    }
+
+                    SignedInvoice signedInvoice = CreateSignedInvoice(res, company,bulkInvoiceRequest.InvoicesType.Name);
+
+                    InvoiceReportingRequest invrequestbody = new InvoiceReportingRequest
+                    {
+                        invoice = res.EncodedInvoice,
+                        invoiceHash = res.InvoiceHash,
+                        uuid = res.UUID
+                    };
+
+                    InvoiceReportingResponse invoicereportingmodel =
+                        await CallComplianceInvoiceAPI(apireqlogic, companyCredentials, res);
+
+                    if (string.IsNullOrEmpty(invoicereportingmodel.ErrorMessage))
+                    {
+                        await _signedInvoiceRepository.Create(signedInvoice);
+
+                        responses.Add(new
+                        {
+                            ZATCA = invoicereportingmodel,
+                            Res = ExtractInvoiceDetails(res)
+                        });
+                    }
+                    else
+                    {
+                        responses.Add(invoicereportingmodel);
+                    }
+                }
+
+                return Ok(responses);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (you might want to use a logging framework here)
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
 
         private Invoice CreateMainInvoice(InvoiceType invoicesType, InvoiceData invoiceData, CompanyInfo companyInfo)
         {
@@ -399,10 +417,10 @@ namespace ZATCA_V2.Controllers
 
             AllowanceCharge allowancecharge = new AllowanceCharge();
 
-            allowancecharge.taxCategory.ID = invoiceData.AllowanceCharge.TaxCategoryId;
+            allowancecharge.taxCategory.ID = invoiceData.AllowanceCharge.TaxCategory;
             allowancecharge.taxCategory.Percent = invoiceData.AllowanceCharge.TaxCategoryPercent;
 
-            allowancecharge.Amount = invoiceData.AllowanceCharge.TaxCategoryId.Equals("S")
+            allowancecharge.Amount = invoiceData.AllowanceCharge.TaxCategory.Equals("S")
                 ? 0
                 : invoiceData.AllowanceCharge.Amount;
 
@@ -441,18 +459,36 @@ namespace ZATCA_V2.Controllers
                 invoiceHash = res.InvoiceHash,
                 uuid = res.UUID
             };
+            var response = apireqlogic.CallComplianceInvoiceAPI(companyCredentials.SecretToken,
+                companyCredentials.Secret, invrequestbody);
 
-            return apireqlogic.CallComplianceInvoiceAPI(companyCredentials.SecretToken, companyCredentials.Secret,
-                invrequestbody);
+            // Ensure that the response object is properly initialized
+            response.ErrorMessage ??= string.Empty;
+
+            return response;
         }
 
-        private SignedInvoice CreateSignedInvoice(Result res, Company company)
+        private SignedInvoice CreateSignedInvoice(Result res, Company company, string invoiceType = "0100000")
         {
+            string invoiceTypeName;
+    
+            if (invoiceType == "0100000")
+            {
+                invoiceTypeName = "Standard";
+            }
+            else if (invoiceType == "0200000")
+            {
+                invoiceTypeName = "Simplified";
+            }
+            else
+            {
+                invoiceTypeName = "Unknown"; // Handle any other cases if needed
+            }
             return new SignedInvoice
             {
                 UUID = res.UUID,
                 InvoiceHash = res.InvoiceHash,
-                InvoiceType = "Standard",
+                InvoiceType = invoiceTypeName,
                 Amount = Convert.ToDecimal(res.TaxExclusiveAmount),
                 Tax = Convert.ToDecimal(res.TaxAmount),
                 SingedXML = res.SingedXML,

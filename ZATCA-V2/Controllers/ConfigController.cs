@@ -7,6 +7,8 @@ using ZATCA_V2.Models;
 using ZATCA_V2.Repositories;
 using ZATCA_V2.Repositories.Interfaces;
 using ZATCA_V2.ZATCA;
+using ZatcaIntegrationSDK.BLL;
+using ZatcaIntegrationSDK.HelperContracts;
 
 namespace ZATCA_V2.Controllers
 {
@@ -214,6 +216,50 @@ namespace ZATCA_V2.Controllers
                 {
                     message = $"An error occurred: {ex.Message}",
                     status = "error",
+                    innerException = ex.InnerException?.Message
+                });
+            }
+        }
+        [HttpPost("generateCSIDTest/{companyId}")]
+        public async Task<IActionResult> GenerateCSIDTest(int companyId)
+        {
+            var company = await _companyRepository.GetById(companyId);
+            if (company == null)
+            {
+                return NotFound(new { Error = $"Company with ID {companyId} not found." });
+            }
+
+          
+
+            try
+            {
+                string filteredCsrPath = $"{Constants.CsrBasePath}/taxpayer{companyId}-filtered.txt";
+                var csrData = Helper.ReadFromFile(filteredCsrPath);
+                ApiRequestLogic apireqlogic = new ApiRequestLogic();
+                ComplianceCsrResponse tokenresponse = new ComplianceCsrResponse();
+                tokenresponse = apireqlogic.GetComplianceCSIDAPI("12345", csrData);
+                var binarySecurityToken = tokenresponse.BinarySecurityToken;
+                var secret = tokenresponse.Secret;
+
+
+
+                return Ok(new
+                {
+                    message = "CSID generated successfully.",
+                    status = 201,
+                    Response = tokenresponse,
+                    Secret = secret,
+                    SecretToken = binarySecurityToken,
+
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = $"An error occurred: {ex.Message}",
+                    status = "error",
+                    details = ex.StackTrace,
                     innerException = ex.InnerException?.Message
                 });
             }
