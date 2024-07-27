@@ -109,5 +109,9 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="Controllers\TestTowInvoiceController.cs" />
+  </ItemGroup>
+
 
 </Project>

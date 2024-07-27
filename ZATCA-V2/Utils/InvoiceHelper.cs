@@ -1,8 +1,5 @@
-﻿using ZATCA_V2.DTOs;
-using ZATCA_V2.Migrations;
-using ZATCA_V2.Requests;
+﻿using ZATCA_V2.Models;
 using ZatcaIntegrationSDK;
-using CompanyInfo = ZATCA_V2.Models.CompanyInfo;
 
 namespace ZATCA_V2.Utils
 {
@@ -46,42 +43,46 @@ namespace ZATCA_V2.Utils
             return supplierParty;
         }
 
-
-        public static AccountingCustomerParty CreateCustomerParty(CustomerInformation customerInformation)
+        public static AccountingCustomerParty CreateCustomerParty(
+            string partyId, string schemeId, string streetName, string? additionalStreetName,
+            string buildingNumber, string? plotIdentification, string cityName, string postalZone,
+            string? countrySubentity, string? citySubdivisionName, string countryIdentificationCode,
+            string registrationName, string companyID)
         {
-            return new AccountingCustomerParty
+            AccountingCustomerParty customerParty = new AccountingCustomerParty
             {
                 partyIdentification = new PartyIdentification
                 {
-                    ID = customerInformation.CommercialNumber,
-                    schemeID = customerInformation.CommercialNumberType
+                    ID = partyId,
+                    schemeID = schemeId
                 },
                 postalAddress = new PostalAddress
                 {
-                    StreetName = customerInformation.Address?.StreetName,
-                    AdditionalStreetName = customerInformation.Address?.AdditionalStreetName,
-                    BuildingNumber = customerInformation.Address?.BuildingNumber,
-                    PlotIdentification = customerInformation.Address?.PlotIdentification,
-                    CityName = customerInformation!.Address?.CityName,
-                    PostalZone = customerInformation!.Address?.PostalZone,
-                    CountrySubentity = customerInformation.Address?.CountrySubentity,
-                    CitySubdivisionName = customerInformation.Address?.CitySubdivisionName,
+                    StreetName = streetName,
+                    AdditionalStreetName = additionalStreetName,
+                    BuildingNumber = buildingNumber,
+                    PlotIdentification = plotIdentification,
+                    CityName = cityName,
+                    PostalZone = postalZone,
+                    CountrySubentity = countrySubentity,
+                    CitySubdivisionName = citySubdivisionName,
                     country = new Country
                     {
-                        IdentificationCode = customerInformation.Address?.IdentificationCode
+                        IdentificationCode = countryIdentificationCode
                     }
                 },
                 partyLegalEntity = new PartyLegalEntity
                 {
-                    RegistrationName = customerInformation.RegistrationName
+                    RegistrationName = registrationName
                 },
                 partyTaxScheme = new PartyTaxScheme
                 {
-                    CompanyID = customerInformation.RegistrationNumber
+                    CompanyID = companyID
                 }
             };
-        }
 
+            return customerParty;
+        }
 
         public static InvoiceLine GetInvoiceLine(string itemName, decimal invoiceQuantity, decimal baseQuantity,
             decimal itemPrice, AllowanceChargeCollection allowanceCharges, string vatCategory,
