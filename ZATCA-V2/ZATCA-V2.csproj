@@ -21,8 +21,11 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
+    <PackageReference Include="SaxonHE10Net31Api" Version="10.9.9" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="7.0.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,6 +47,12 @@
     <Reference Include="BouncyCastle.Crypto">
       <HintPath>libs\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib">
+      <HintPath>libs\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="IKVM.Java">
+      <HintPath>libs\IKVM.Java.dll</HintPath>
+    </Reference>
     <Reference Include="IKVM.OpenJDK.Core">
       <HintPath>libs\IKVM.OpenJDK.Core.dll</HintPath>
     </Reference>
@@ -56,11 +65,44 @@
     <Reference Include="IKVM.OpenJDK.XML.API">
       <HintPath>libs\IKVM.OpenJDK.XML.API.dll</HintPath>
     </Reference>
-    <Reference Include="IKVM.Runtime">
-      <HintPath>libs\IKVM.Runtime.dll</HintPath>
+    <Reference Include="itextsharp">
+      <HintPath>libs\itextsharp.dll</HintPath>
     </Reference>
-    <Reference Include="saxon-he-10.8">
-      <HintPath>libs\saxon-he-10.8.dll</HintPath>
+    <Reference Include="itextsharp.pdfa">
+      <HintPath>libs\itextsharp.pdfa.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyModel">
+      <HintPath>libs\Microsoft.Extensions.DependencyModel.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Posix">
+      <HintPath>libs\Mono.Posix.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Unix">
+      <HintPath>libs\Mono.Unix.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>libs\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Saxon.HE">
+      <HintPath>libs\Saxon.HE.dll</HintPath>
+    </Reference>
+    <Reference Include="SaxonHE10Net31">
+      <HintPath>libs\SaxonHE10Net31.dll</HintPath>
+    </Reference>
+    <Reference Include="SaxonHE10Net31Api">
+      <HintPath>libs\SaxonHE10Net31Api.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.Odbc">
+      <HintPath>libs\System.Data.Odbc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Formats.Asn1">
+      <HintPath>libs\System.Formats.Asn1.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Pkcs">
+      <HintPath>libs\System.Security.Cryptography.Pkcs.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Xml">
+      <HintPath>libs\System.Security.Cryptography.Xml.dll</HintPath>
     </Reference>
     <Reference Include="ZatcaIntegrationSDK">
       <HintPath>libs\ZatcaIntegrationSDK.dll</HintPath>

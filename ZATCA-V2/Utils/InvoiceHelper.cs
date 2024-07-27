@@ -1,91 +1,87 @@
-﻿using ZatcaIntegrationSDK;
+﻿using ZATCA_V2.DTOs;
+using ZATCA_V2.Migrations;
+using ZATCA_V2.Requests;
+using ZatcaIntegrationSDK;
+using CompanyInfo = ZATCA_V2.Models.CompanyInfo;
 
 namespace ZATCA_V2.Utils
 {
     public class InvoiceHelper
     {
-        public static AccountingSupplierParty CreateSupplierParty(
-            string partyId, string schemeId, string streetName, string additionalStreetName,
-            string buildingNumber, string plotIdentification, string cityName, string postalZone,
-            string countrySubentity, string citySubdivisionName, string countryIdentificationCode,
-            string registrationName, string companyID)
+        public static AccountingSupplierParty CreateSupplierParty(CompanyInfo companyInfo)
         {
             // Create an instance of the SupplierParty class
             AccountingSupplierParty supplierParty = new AccountingSupplierParty
             {
                 partyIdentification = new PartyIdentification
                 {
-                    ID = partyId,
-                    schemeID = schemeId
+                    ID = companyInfo.PartyId,
+                    schemeID = companyInfo.SchemeID
                 },
                 postalAddress = new PostalAddress
                 {
-                    StreetName = streetName,
-                    AdditionalStreetName = additionalStreetName,
-                    BuildingNumber = buildingNumber,
-                    PlotIdentification = plotIdentification,
-                    CityName = cityName,
-                    PostalZone = postalZone,
-                    CountrySubentity = countrySubentity,
-                    CitySubdivisionName = citySubdivisionName,
+                    StreetName = companyInfo.StreetName,
+                    AdditionalStreetName = companyInfo.AdditionalStreetName,
+                    BuildingNumber = companyInfo.BuildingNumber,
+                    PlotIdentification = companyInfo.PlotIdentification,
+                    CityName = companyInfo.CityName,
+                    PostalZone = companyInfo.PostalZone,
+                    CountrySubentity = companyInfo.CountrySubentity,
+                    CitySubdivisionName = companyInfo.CitySubdivisionName,
                     country = new Country
                     {
-                        IdentificationCode = countryIdentificationCode
+                        IdentificationCode = companyInfo.IdentificationCode
                     }
                 },
                 partyLegalEntity = new PartyLegalEntity
                 {
-                    RegistrationName = registrationName
+                    RegistrationName = companyInfo.RegistrationName
                 },
                 partyTaxScheme = new PartyTaxScheme
                 {
-                    CompanyID = companyID
+                    CompanyID = companyInfo.taxRegistrationNumber
                 }
             };
 
             return supplierParty;
         }
 
-        public static AccountingCustomerParty CreateCustomerParty(
-            string partyId, string schemeId, string streetName, string? additionalStreetName,
-            string buildingNumber, string? plotIdentification, string cityName, string postalZone,
-            string? countrySubentity, string? citySubdivisionName, string countryIdentificationCode,
-            string registrationName, string companyID)
+
+        public static AccountingCustomerParty CreateCustomerParty(CustomerInformation customerInformation)
         {
-            AccountingCustomerParty customerParty = new AccountingCustomerParty
+            return new AccountingCustomerParty
             {
                 partyIdentification = new PartyIdentification
                 {
-                    ID = partyId,
-                    schemeID = schemeId
+                    ID = customerInformation.CommercialNumber,
+                    schemeID = customerInformation.CommercialNumberType
                 },
                 postalAddress = new PostalAddress
                 {
-                    StreetName = streetName,
-                    AdditionalStreetName = additionalStreetName,
-                    BuildingNumber = buildingNumber,
-                    PlotIdentification = plotIdentification,
-                    CityName = cityName,
-                    PostalZone = postalZone,
-                    CountrySubentity = countrySubentity,
-                    CitySubdivisionName = citySubdivisionName,
+                    StreetName = customerInformation.Address?.StreetName,
+                    AdditionalStreetName = customerInformation.Address?.AdditionalStreetName,
+                    BuildingNumber = customerInformation.Address?.BuildingNumber,
+                    PlotIdentification = customerInformation.Address?.PlotIdentification,
+                    CityName = customerInformation!.Address?.CityName,
+                    PostalZone = customerInformation!.Address?.PostalZone,
+                    CountrySubentity = customerInformation.Address?.CountrySubentity,
+                    CitySubdivisionName = customerInformation.Address?.CitySubdivisionName,
                     country = new Country
                     {
-                        IdentificationCode = countryIdentificationCode
+                        IdentificationCode = customerInformation.Address?.IdentificationCode
                     }
                 },
                 partyLegalEntity = new PartyLegalEntity
                 {
-                    RegistrationName = registrationName
+                    RegistrationName = customerInformation.RegistrationName
                 },
                 partyTaxScheme = new PartyTaxScheme
                 {
-                    CompanyID = companyID
+                    CompanyID = customerInformation.RegistrationNumber
                 }
             };
-
-            return customerParty;
         }
+
 
         public static InvoiceLine GetInvoiceLine(string itemName, decimal invoiceQuantity, decimal baseQuantity,
             decimal itemPrice, AllowanceChargeCollection allowanceCharges, string vatCategory,
