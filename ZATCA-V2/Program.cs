@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ZATCA_V2.Data;
 using ZATCA_V2.Repositories;
+using ZATCA_V2.Middlewares;
 using ZATCA_V2.Repositories.Interfaces;
 using ZATCA_V2.ZATCA;
 
@@ -16,7 +17,6 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
 var logger = LoggerFactory.Create(logging => logging.AddConsole()).CreateLogger<Program>();
-
 
 builder.Services.AddDbContext<DataContext>(options =>
 {
@@ -77,11 +77,14 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
 var app = builder.Build();
 
 logger.LogInformation("Running in {Environment} environment", app.Environment.EnvironmentName);
 
-// Configure the HTTP request pipeline.
+// Add the API key middleware
+app.UseMiddleware<ApiKeyMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

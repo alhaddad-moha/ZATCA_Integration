@@ -32,6 +32,40 @@ namespace ZATCA_V2.Controllers
             _externalApiService = externalApiService ?? throw new ArgumentNullException(nameof(externalApiService));
         }
 
+        // Health check endpoint
+        [HttpGet("health")]
+        public async Task<IActionResult> HealthCheck()
+        {
+            var healthStatus = new
+            {
+                DatabaseConnection = "Unknown",
+                ZatcaApiConnection = "Unknown"
+            };
+
+            try
+            {
+                // Check database connection
+                var company = await _companyRepository.GetById(1); // Just checking if we can retrieve a company
+                healthStatus = healthStatus with { DatabaseConnection = company != null ? "Healthy" : "Unhealthy" };
+            }
+            catch (Exception ex)
+            {
+                healthStatus = healthStatus with { DatabaseConnection = $"Unhealthy: {ex.Message}" };
+            }
+
+            try
+            {
+                // Check ZATCA API connection
+                var response = await _externalApiService.CallComplianceCSR("testCSRData"); // Use test data
+                healthStatus = healthStatus with { ZatcaApiConnection = !string.IsNullOrEmpty(response) ? "Healthy" : "Unhealthy" };
+            }
+            catch (Exception ex)
+            {
+                healthStatus = healthStatus with { ZatcaApiConnection = $"Unhealthy: {ex.Message}" };
+            }
+
+            return Ok(healthStatus);
+        }
         [HttpPost("generateCSR/{companyId}")]
         public async Task<IActionResult> GenerateCsr(int companyId)
         {
