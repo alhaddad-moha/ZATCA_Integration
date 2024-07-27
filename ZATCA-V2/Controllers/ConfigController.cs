@@ -2,6 +2,9 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using ZATCA_V2.Data;
 using ZATCA_V2.Helpers;
 using ZATCA_V2.Models;
 using ZATCA_V2.Repositories;
@@ -20,11 +23,12 @@ namespace ZATCA_V2.Controllers
         private readonly ICompanyRepository _companyRepository;
         private readonly ICompanyCredentialsRepository _companyCredentialsRepository;
         private readonly IExternalApiService _externalApiService;
+        private readonly DataContext _context;
 
 
         public ConfigController(IHttpClientFactory httpClientFactory, ICompanyRepository companyRepository,
             ICompanyCredentialsRepository companyCredentialsRepository
-            , IExternalApiService externalApiService)
+            , IExternalApiService externalApiService, DataContext dataContext)
 
         {
             _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
@@ -32,6 +36,7 @@ namespace ZATCA_V2.Controllers
             _companyCredentialsRepository = companyCredentialsRepository ??
                                             throw new ArgumentNullException(nameof(companyCredentialsRepository));
             _externalApiService = externalApiService ?? throw new ArgumentNullException(nameof(externalApiService));
+            _context = dataContext;
         }
 
         // Health check endpoint
@@ -46,28 +51,36 @@ namespace ZATCA_V2.Controllers
 
             try
             {
-                // Check database connection
-                var company = await _companyRepository.GetById(1); // Just checking if we can retrieve a company
-                healthStatus = healthStatus with { DatabaseConnection = company != null ? "Healthy" : "Unhealthy" };
+                // Check database connection by executing a simple query
+                await _context.Database.ExecuteSqlRawAsync("SELECT 1");
+                healthStatus = healthStatus with { DatabaseConnection = "Healthy" };
+            }
+            catch (SqlException ex)
+            {
+                healthStatus = healthStatus with { DatabaseConnection = $"Unhealthy: SQL Exception: {ex.Message}" };
             }
             catch (Exception ex)
             {
-                healthStatus = healthStatus with { DatabaseConnection = $"Unhealthy: {ex.Message}" };
+                healthStatus = healthStatus with { DatabaseConnection = $"Unhealthy: General Exception: {ex.Message}" };
             }
 
+            using var httpClient = new HttpClient();
             try
             {
-                // Check ZATCA API connection
-                var response = await _externalApiService.CallComplianceCSR("testCSRData"); // Use test data
-                healthStatus = healthStatus with { ZatcaApiConnection = !string.IsNullOrEmpty(response) ? "Healthy" : "Unhealthy" };
+                var response = httpClient.GetAsync("https://sandbox.zatca.gov.sa/").Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    healthStatus = healthStatus with { ZatcaApiConnection = "Healthy" };
+                }
             }
             catch (Exception ex)
             {
-                healthStatus = healthStatus with { ZatcaApiConnection = $"Unhealthy: {ex.Message}" };
+                healthStatus = healthStatus with { ZatcaApiConnection = "ZATCA URL is unreachable" + ex.Message };
             }
 
             return Ok(healthStatus);
         }
+
         [HttpPost("generateCSR/{companyId}")]
         public async Task<IActionResult> GenerateCsr(int companyId)
         {
@@ -155,7 +168,7 @@ namespace ZATCA_V2.Controllers
                 string encodedCsr = Helper.EncodeToBase64(generatedCsr);
                 Helper.SaveToFile(encodedCsr, filteredCsrPath);
                 return Ok(new
-                    { message = "Private key, public key, and CSR generated successfully.", status =201 });
+                    { message = "Private key, public key, and CSR generated successfully.", status = 201 });
             }
             catch (Exception ex)
             {
@@ -220,6 +233,7 @@ namespace ZATCA_V2.Controllers
                 });
             }
         }
+
         [HttpPost("generateCSIDTest/{companyId}")]
         public async Task<IActionResult> GenerateCSIDTest(int companyId)
         {
@@ -229,7 +243,6 @@ namespace ZATCA_V2.Controllers
                 return NotFound(new { Error = $"Company with ID {companyId} not found." });
             }
 
-          
 
             try
             {
@@ -242,7 +255,6 @@ namespace ZATCA_V2.Controllers
                 var secret = tokenresponse.Secret;
 
 
-
                 return Ok(new
                 {
                     message = "CSID generated successfully.",
@@ -250,7 +262,6 @@ namespace ZATCA_V2.Controllers
                     Response = tokenresponse,
                     Secret = secret,
                     SecretToken = binarySecurityToken,
-
                 });
             }
             catch (Exception ex)
