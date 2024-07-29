@@ -21,7 +21,7 @@ pipelines:
                 TAGS: $BITBUCKET_COMMIT
       - step:
           name: deploy to ecs
-          deployment: deploy-staging
+          deployment: staging
           services:
             - docker
           caches:
