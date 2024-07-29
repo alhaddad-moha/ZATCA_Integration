@@ -14,4 +14,17 @@ public class CertificateConfiguration
     // Additional properties specific to the generated file
     public string CertificateTemplateName => "PREZATCA-code-Signing";
     public string SN => "1-Device|2-234|3-mod";
+    
+    public CertificateConfiguration()
+    {
+        C = string.Empty;
+        OU = string.Empty;
+        O = string.Empty;
+        CN = string.Empty;
+        UID = string.Empty;
+        Title = string.Empty;
+        RegisteredAddress = string.Empty;
+        BusinessCategory = string.Empty;
+        EmailAddress = string.Empty;
+    }
 }

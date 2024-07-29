@@ -1,0 +1,16 @@
+version: '3.4'
+
+services:
+  zatca-v2:
+    image: zatca-v2
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5074:80"
+      - "7074:443"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5074/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

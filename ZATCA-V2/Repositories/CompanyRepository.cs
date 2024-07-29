@@ -19,7 +19,7 @@ namespace ZATCA_V2.Repositories
                 return await _context.Companies.Include(c => c.CompanyCredentials).ToListAsync();
             }
 
-            public async Task<Company> GetById(int id)
+            public async Task<Company?> GetById(int id)
             {
                 return await _context.Companies.Include(c => c.CompanyCredentials).FirstOrDefaultAsync(c => c.Id == id);
             }
