@@ -17,7 +17,7 @@ pipelines:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
                 AWS_DEFAULT_REGION: eu-west-1
-                IMAGE_NAME: zatca
+                IMAGE_NAME: $IMAGE
                 TAGS: $BITBUCKET_COMMIT
       - step:
           name: deploy to ecs
