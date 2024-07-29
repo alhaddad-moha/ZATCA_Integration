@@ -5,7 +5,6 @@ pipelines:
     main:
       - step:
           name: build push docker
-          deployment: staging
           services:
             - docker
           caches:
@@ -22,7 +21,7 @@ pipelines:
                 TAGS: $BITBUCKET_COMMIT
       - step:
           name: deploy to ecs
-          deployment: staging
+          deployment: deploy-staging
           services:
             - docker
           caches:
