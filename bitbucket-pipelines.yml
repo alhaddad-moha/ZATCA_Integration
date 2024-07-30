@@ -31,8 +31,8 @@ pipelines:
             # install aws cli & ecs-cli
             - apk add --no-cache curl jq
             - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            - unzip awscliv2.zip
-            - ./aws/install
+            - unzip awscliv2.zip && ./aws/install
+            - chmod +x /usr/local/bin/aws
             - curl -o /usr/local/bin/ecs-cli https://amazon-ecs-cli.s3.amazonaws.com/ecs-cli-linux-amd64-latest
             - chmod +x /usr/local/bin/ecs-cli
             - ecs-cli --version
