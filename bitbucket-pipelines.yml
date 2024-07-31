@@ -30,11 +30,9 @@ pipelines:
           script:
             - apk update
             - apk add --no-cache \
-                bash \
                 curl \
                 unzip \
                 groff \
-                less \
                 libc6-compat \
                 libstdc++ \
                 libgcc
