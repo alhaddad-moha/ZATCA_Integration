@@ -29,13 +29,7 @@ pipelines:
             - pip
           script:
             - apk update
-            - apk add --no-cache \
-                curl \
-                unzip \
-                groff \
-                libc6-compat \
-                libstdc++ \
-                libgcc
+            - apk add --no-cache bash curl unzip groff less libc6-compat libstdc++ libgcc
             - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             - unzip awscliv2.zip && ./aws/install
             - chmod +x /usr/local/bin/aws
