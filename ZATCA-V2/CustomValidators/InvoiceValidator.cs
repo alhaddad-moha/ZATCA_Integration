@@ -25,6 +25,6 @@ public class InvoiceValidator : AbstractValidator<InvoiceData>
         RuleForEach(x => x.InvoiceItems).SetValidator(new InvoiceItemValidator());
         RuleFor(x => x.CustomerInformation).SetValidator(new CustomerInformationValidator());
         RuleFor(x => x.AllowanceCharge).SetValidator(new AllowanceChargeValidator());
-        RuleFor(x => x.LegalTotal).SetValidator(new LegalTotalValidator());
+       // RuleFor(x => x.LegalTotal).SetValidator(new LegalTotalValidator());
     }
 }

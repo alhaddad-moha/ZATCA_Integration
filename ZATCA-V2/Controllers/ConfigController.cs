@@ -40,7 +40,7 @@ namespace ZATCA_V2.Controllers
             _context = dataContext;
         }
 
-        
+
         // Health check endpoint
         [HttpGet("health")]
         public async Task<IActionResult> HealthCheck()
@@ -255,7 +255,7 @@ namespace ZATCA_V2.Controllers
                 var csrData = Helper.ReadFromFile(filteredCsrPath);
                 ApiRequestLogic apireqlogic = new ApiRequestLogic();
                 ComplianceCsrResponse tokenresponse = new ComplianceCsrResponse();
-                tokenresponse = apireqlogic.GetComplianceCSIDAPI("12345", csrData);
+                tokenresponse = await apireqlogic.GetComplianceCSIDAPI("12345", csrData);
                 var binarySecurityToken = tokenresponse.BinarySecurityToken;
                 var secret = tokenresponse.Secret;
 
@@ -266,7 +266,7 @@ namespace ZATCA_V2.Controllers
                     status = 201,
                     Response = tokenresponse,
                     Secret = secret,
-                    SecretToken = binarySecurityToken,
+                    SecretToken = binarySecurityToken
                 });
             }
             catch (Exception ex)
@@ -280,8 +280,7 @@ namespace ZATCA_V2.Controllers
                 });
             }
         }
-        
-        
+
 
         private string CreateConfigFile(CertificateConfiguration certificateConfig, int companyId)
         {

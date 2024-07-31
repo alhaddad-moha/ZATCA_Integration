@@ -21,7 +21,8 @@ public class Constants
     public const string CERT_Path = "Utils/keys/sdk/cert.txt";
     public const string Credentials = "Utils/keys/sdk/cred.txt";
     public const string CSR_Path = "Utils/keys/taxpayer.csr";
-
+    
+    public const string DefaultInvoiceHash = "NWZlY2ViNjZmZmM4NmYzOGQ5NTI3ODZjNmQ2OTZjNzljMmRiYzIzOWRkNGU5MWI0NjcyOWQ3M2EyN2ZiNTdlOQ==";
     public const string X509SerialNumber =
         "2475382886904809774818644480820936050208702411";
 

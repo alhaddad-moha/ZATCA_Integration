@@ -1,7 +1,8 @@
-﻿using FluentValidation;
+﻿using System.ComponentModel.DataAnnotations;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using ZATCA_V2.CustomValidators;
 using ZATCA_V2.Exceptions;
-using ZATCA_V2.Helpers;
 using ZATCA_V2.Models;
 using ZATCA_V2.Repositories.Interfaces;
 using ZATCA_V2.Requests;
@@ -15,7 +16,7 @@ namespace ZATCA_V2.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class InvoiceController : ControllerBase
+    public class SimulationInvoiceController : ControllerBase
     {
         private readonly ICompanyCredentialsRepository _companyCredentialsRepository;
         private readonly ISignedInvoiceRepository _signedInvoiceRepository;
@@ -25,7 +26,7 @@ namespace ZATCA_V2.Controllers
         private readonly IValidator<SingleInvoiceRequest> _signInvoiceRequestValidator;
 
 
-        public InvoiceController(ICompanyCredentialsRepository companyCredentialsRepository,
+        public SimulationInvoiceController(ICompanyCredentialsRepository companyCredentialsRepository,
             ISignedInvoiceRepository signedInvoiceRepository, ICompanyInfoRepository companyInfoRepository,
             ICompanyRepository companyRepository, IValidator<BulkInvoiceRequest> bulkInvoiceRequestValidator,
             IValidator<SingleInvoiceRequest> signInvoiceRequestValidator)
@@ -38,11 +39,33 @@ namespace ZATCA_V2.Controllers
             _signedInvoiceRepository = signedInvoiceRepository;
         }
 
-        [HttpGet("companies/{id}")]
-        public async Task<ActionResult<List<SignedInvoice>>> GetByCompanyId(int id)
+
+        [HttpPost("GenerateComplianceCSID/{companyId}")]
+        public async Task<IActionResult> GenerateCompliance(int companyId)
         {
-            var invoices = await _signedInvoiceRepository.GetAllByCompanyId(id);
-            return Ok(invoices);
+            var company = await _companyRepository.GetById(companyId);
+            if (company == null)
+            {
+                return BadRequest("Company Not Found");
+            }
+
+
+            var companyInfo = await _companyInfoRepository.GetByCompanyId(companyId);
+            var companyCredentials =
+                await _companyCredentialsRepository.GetLatestByCompanyId(companyId);
+
+            if (companyCredentials == null)
+            {
+                return BadRequest("companyCredentials Not Found");
+            }
+
+
+            ApiRequestLogic apireqlogic = new ApiRequestLogic(Mode.Simulation);
+
+            string csr = companyCredentials.CSR ?? "Test";
+            var response = apireqlogic.GetComplianceCSIDAPI("155678", csr);
+
+            return Ok(response);
         }
 
 
@@ -58,6 +81,7 @@ namespace ZATCA_V2.Controllers
                 }
 
 
+                var companyInfo = await _companyInfoRepository.GetByCompanyId(singleInvoiceRequest.CompanyId);
                 var companyCredentials =
                     await _companyCredentialsRepository.GetLatestByCompanyId(singleInvoiceRequest.CompanyId);
 
@@ -72,13 +96,13 @@ namespace ZATCA_V2.Controllers
                 }
 
                 var latestInvoice = await _signedInvoiceRepository.GetLatestByCompanyId(singleInvoiceRequest.CompanyId);
+                string invoiceHash = latestInvoice == null ? "112345" : latestInvoice.InvoiceHash;
                 UBLXML ubl = new UBLXML();
-                ApiRequestLogic apireqlogic = new ApiRequestLogic(Mode.developer);
+                ApiRequestLogic apireqlogic = new ApiRequestLogic(Mode.Simulation);
 
                 Invoice inv = CreateMainInvoice(singleInvoiceRequest.InvoiceType, singleInvoiceRequest.Invoice,
-                    company);
+                    companyInfo!);
                 Result res = new Result();
-                string invoiceHash = latestInvoice == null ? Constants.DefaultInvoiceHash : latestInvoice.InvoiceHash;
 
                 foreach (var invoiceItem in singleInvoiceRequest.Invoice.InvoiceItems!)
                 {
@@ -113,14 +137,10 @@ namespace ZATCA_V2.Controllers
                 InvoiceReportingResponse invoicereportingmodel =
                     await SendInvoiceToZATCA(apireqlogic, companyCredentials, res, inv);
 
-                if (invoicereportingmodel.StatusCode == 202)
+                if (!string.IsNullOrEmpty(invoicereportingmodel.ErrorMessage))
                 {
-                    if (!string.IsNullOrEmpty(invoicereportingmodel.ErrorMessage))
-                    {
-                        return BadRequest(invoicereportingmodel.ErrorMessage);
-                    }
+                    return BadRequest(invoicereportingmodel);
                 }
-
 
                 await _signedInvoiceRepository.Create(signedInvoice);
 
@@ -148,32 +168,6 @@ namespace ZATCA_V2.Controllers
         {
             try
             {
-                FluentValidation.Results.ValidationResult validationResult =
-                    await _bulkInvoiceRequestValidator.ValidateAsync(bulkInvoiceRequest);
-                if (!validationResult.IsValid)
-                {
-                    var errors = validationResult.Errors
-                        .GroupBy(e => e.PropertyName)
-                        .ToDictionary(
-                            g => g.Key,
-                            g => g.Select(e => e.ErrorMessage).ToArray()
-                        );
-
-                    // Create a problem details object
-                    var problemDetails = new ProblemDetails
-                    {
-                        Status = 400,
-                        Title = "Validation Error",
-                        Detail = "One or more validation errors occurred. test",
-                        Instance = HttpContext?.TraceIdentifier // Optional: Use trace identifier for request tracking
-                    };
-
-                    // Add errors to the problem details
-                    problemDetails.Extensions["errors"] = errors;
-
-                    return BadRequest(problemDetails);
-                }
-
                 var company = await _companyRepository.GetById(bulkInvoiceRequest.companyId);
                 if (company == null)
                 {
@@ -198,7 +192,7 @@ namespace ZATCA_V2.Controllers
                 List<object> responses = new List<object>();
                 foreach (var invoiceData in bulkInvoiceRequest.Invoices!)
                 {
-                    Invoice inv = CreateMainInvoice(bulkInvoiceRequest.InvoicesType, invoiceData, company!);
+                    Invoice inv = CreateMainInvoice(bulkInvoiceRequest.InvoicesType, invoiceData, companyInfo!);
                     Result res = new Result();
 
                     foreach (var invoiceItem in invoiceData.InvoiceItems!)
@@ -275,9 +269,14 @@ namespace ZATCA_V2.Controllers
         }
 
 
-        private Invoice CreateMainInvoice(InvoiceType invoicesType, InvoiceData invoiceData, Company companyInfo)
+        private Invoice CreateMainInvoice(InvoiceType invoicesType, InvoiceData invoiceData, CompanyInfo companyInfo)
         {
             Invoice inv = new Invoice();
+
+            if (invoicesType == null)
+            {
+                Console.WriteLine("Invoice Type is Null");
+            }
 
             inv.ID = invoiceData.Id;
             inv.IssueDate = invoiceData.IssueDate;
@@ -306,42 +305,33 @@ namespace ZATCA_V2.Controllers
 
             PaymentMeans paymentMeans = new PaymentMeans();
             paymentMeans.PaymentMeansCode = invoiceData.PaymentDetails.Type;
-            if (inv.invoiceTypeCode.id == 383 || inv.invoiceTypeCode.id == 381)
-            {
-                paymentMeans.InstructionNote =
-                    invoiceData.PaymentDetails
-                        .InstructionNote; //the reason of return invoice - debit notes // manatory only for return invoice - debit notes 
-            }
-
+            paymentMeans.InstructionNote = invoiceData.PaymentDetails.InstructionNote;
             inv.paymentmeans.Add(paymentMeans);
 
             inv.delivery.ActualDeliveryDate = invoiceData.ActualDeliveryDate;
             inv.delivery.LatestDeliveryDate = invoiceData.LatestDeliveryDate;
 
-            AccountingSupplierParty supplierParty = InvoiceHelper.CreateSupplierPartyFromCompany(companyInfo);
+            AccountingSupplierParty supplierParty = InvoiceHelper.CreateSupplierParty(companyInfo);
 
             inv.SupplierParty = supplierParty;
 
-            if (invoicesType.Name.Substring(0, 2) == "01")
-            {
-                AccountingCustomerParty customerParty = InvoiceHelper.CreateCustomerParty(
-                    invoiceData!.CustomerInformation.CommercialNumber!,
-                    invoiceData.CustomerInformation.CommercialNumberType,
-                    invoiceData.CustomerInformation.Address!.StreetName,
-                    invoiceData.CustomerInformation.Address.AdditionalStreetName,
-                    invoiceData.CustomerInformation.Address.BuildingNumber,
-                    "123",
-                    invoiceData.CustomerInformation.Address.CityName,
-                    invoiceData.CustomerInformation.Address.PostalZone,
-                    invoiceData.CustomerInformation.Address.CountrySubentity,
-                    invoiceData.CustomerInformation.Address.CitySubdivisionName,
-                    invoiceData.CustomerInformation.Address.IdentificationCode,
-                    invoiceData.CustomerInformation.RegistrationName,
-                    invoiceData.CustomerInformation.RegistrationNumber
-                );
+            AccountingCustomerParty customerParty = InvoiceHelper.CreateCustomerParty(
+                invoiceData!.CustomerInformation.CommercialNumber!,
+                invoiceData.CustomerInformation.CommercialNumberType,
+                invoiceData.CustomerInformation.Address.StreetName,
+                invoiceData.CustomerInformation.Address.AdditionalStreetName,
+                invoiceData.CustomerInformation.Address.BuildingNumber,
+                "9833",
+                invoiceData.CustomerInformation.Address.CityName,
+                invoiceData.CustomerInformation.Address.PostalZone,
+                invoiceData.CustomerInformation.Address.CountrySubentity,
+                invoiceData.CustomerInformation.Address.CitySubdivisionName,
+                invoiceData.CustomerInformation.Address.IdentificationCode,
+                invoiceData.CustomerInformation.RegistrationName,
+                invoiceData.CustomerInformation.RegistrationNumber
+            );
 
-                inv.CustomerParty = customerParty;
-            }
+            inv.CustomerParty = customerParty;
 
             AllowanceCharge allowancecharge = new AllowanceCharge();
 
@@ -388,7 +378,7 @@ namespace ZATCA_V2.Controllers
                 invoiceHash = res.InvoiceHash,
                 uuid = res.UUID
             };
-            var mode = Mode.developer;
+            var mode = Mode.Simulation;
             bool isStandardInvoice = invoiceType.Substring(0, 2) == "01";
             var response = new InvoiceReportingResponse();
             switch (mode)
@@ -396,12 +386,12 @@ namespace ZATCA_V2.Controllers
                 case Mode.developer:
                     response = await apireqlogic.CallComplianceInvoiceAPI(companyCredentials.SecretToken,
                         companyCredentials.Secret, invrequestbody);
-                    Console.WriteLine("Erorr Moha");
-                    return response;
                     break;
                 case Mode.Simulation:
                     if (isStandardInvoice)
                     {
+                        response = await apireqlogic.CallReportingAPI(companyCredentials.SecretToken,
+                            companyCredentials.Secret, invrequestbody);
                     }
                     else
                     {
@@ -416,6 +406,9 @@ namespace ZATCA_V2.Controllers
                     break;
             }
 
+
+            // Ensure that the response object is properly initialized
+            response.ErrorMessage ??= string.Empty;
 
             return response;
         }

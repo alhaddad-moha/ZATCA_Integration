@@ -12,7 +12,9 @@ using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using ZATCA_V2.CustomValidators;
+using ZATCA_V2.Mappers;
 using ZATCA_V2.Requests;
+using SlackLogger;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,7 +26,14 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
 var logger = LoggerFactory.Create(logging => logging.AddConsole()).CreateLogger<Program>();
+builder.Logging.AddSlack(options =>
+{
+    options.WebhookUrl = "https://hooks.slack.com/services/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";
+    options.LogLevel = LogLevel.Error;
+    options.NotificationLevel = LogLevel.None;
+    options.ApplicationName = "ZATCA";
 
+});
 builder.Services.AddDbContext<DataContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -100,6 +109,8 @@ builder.Services.AddValidatorsFromAssemblyContaining<BulkInvoiceRequestValidator
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddAutoMapper(typeof(CompanyProfile));
+
 
 // Add health checks
 builder.Services.AddHealthChecks()

@@ -120,11 +120,11 @@ namespace ZATCA_V2.Controllers
 
                 CSIDGenerator generator = new CSIDGenerator(_mode);
                 CertificateResponse response =
-                    generator.GenerateCSID(certrequest, inv, Directory.GetCurrentDirectory());
+                    await generator.GenerateCSID(certrequest, inv, Directory.GetCurrentDirectory());
 
                 if (response.IsSuccess)
                 {
-                    var binarySecurityToken = response.SecretKey;
+                    var binarySecurityToken = Utility.ToBase64Encode(response.CSID);
 
                     var companyCredentials = new CompanyCredentials
                     {
@@ -196,7 +196,7 @@ namespace ZATCA_V2.Controllers
 
                 CSIDGenerator generator = new CSIDGenerator(_mode);
                 CertificateResponse response =
-                    generator.GenerateCSID(certRequest, inv, Directory.GetCurrentDirectory());
+                    await generator.GenerateCSID(certRequest, inv, Directory.GetCurrentDirectory());
 
                 if (response.IsSuccess)
                 {

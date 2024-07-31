@@ -4,7 +4,6 @@ using ZatcaIntegrationSDK;
 
 namespace ZATCA_V2.ZATCA
 {
-  
     public class ZatcaService : IZatcaService
     {
         private readonly ApiRequestLogic _apiRequestLogic;
@@ -16,7 +15,6 @@ namespace ZATCA_V2.ZATCA
 
         public async Task<InvoiceClearanceResponse> SendClearanceAsync(Invoice inv, Result res)
         {
-
             var invRequestBody = new InvoiceReportingRequest
             {
                 invoice = res.EncodedInvoice,
@@ -25,14 +23,12 @@ namespace ZATCA_V2.ZATCA
             };
 
             var secretKey = "lHntHtEGWi+ZJtssv167Dy+R64uxf/PTMXg3CEGYfvM=";
-            return _apiRequestLogic.CallClearanceAPI(Utility.ToBase64Encode(inv.cSIDInfo.CertPem), secretKey, invRequestBody);
-
-           
+            return await _apiRequestLogic.CallClearanceAPI(Utility.ToBase64Encode(inv.cSIDInfo.CertPem), secretKey,
+                invRequestBody);
         }
 
         public async Task<InvoiceReportingResponse> SendReportingAsync(Invoice inv, Result res)
         {
-
             var invRequestBody = new InvoiceReportingRequest
             {
                 invoice = res.EncodedInvoice,
@@ -40,17 +36,16 @@ namespace ZATCA_V2.ZATCA
                 uuid = res.UUID
             };
 
-          
-                var secretKey = "lHntHtEGWi+ZJtssv167Dy+R64uxf/PTMXg3CEGYfvM=";
-return _apiRequestLogic.CallReportingAPI(Utility.ToBase64Encode(inv.cSIDInfo.CertPem), secretKey, invRequestBody);
-               
-            }
-        
+
+            var secretKey = "lHntHtEGWi+ZJtssv167Dy+R64uxf/PTMXg3CEGYfvM=";
+            return await _apiRequestLogic.CallReportingAPI(Utility.ToBase64Encode(inv.cSIDInfo.CertPem), secretKey,
+                invRequestBody);
+        }
+
 
         private void DetermineMode()
         {
             // Logic to determine mode
         }
     }
-
 }
