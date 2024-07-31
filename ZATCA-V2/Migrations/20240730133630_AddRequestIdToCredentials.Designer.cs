@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ZATCA_V2.Data;
 
@@ -11,9 +12,10 @@ using ZATCA_V2.Data;
 namespace ZATCA_V2.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240730133630_AddRequestIdToCredentials")]
+    partial class AddRequestIdToCredentials
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,28 +32,6 @@ namespace ZATCA_V2.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<string>("AdditionalStreetName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BuildingNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BusinessIndustry")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CityName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CitySubdivisionName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CommercialRegistrationNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("CommonName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -60,22 +40,17 @@ namespace ZATCA_V2.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CountrySubentity")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DeviceSerialNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("EmailAddress")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("IdentificationCode")
+                    b.Property<string>("IndustryBusinessCategory")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("InvoiceType")
+                    b.Property<string>("LocationAddress")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OrganizationIdentifier")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("OrganizationName")
                         .IsRequired()
@@ -85,28 +60,9 @@ namespace ZATCA_V2.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PlotIdentification")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PostalZone")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SchemeId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("StreetName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TaxRegistrationNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("TaxRegistrationNumber")
+                    b.HasIndex("OrganizationIdentifier")
                         .IsUnique();
 
                     b.ToTable("Companies");

@@ -1,14 +1,14 @@
-﻿namespace ZATCA_V2.Helpers;
+﻿using ZatcaIntegrationSDK.APIHelper;
+
+namespace ZATCA_V2.Helpers;
 
 public class Constants
 {
-    
-    
     public const string KeysBasePath = "Credentials/Keys";
     public const string CsrBasePath = "Credentials/CSR";
     public const string ConfigBasePath = "Credentials/ConfigFiles";
-    
-    
+
+
     public const string DigestValue =
         "YTJkM2JhYTcwZTBhZTAxOGYwODMyNzY3NTdkZDM3YzhjY2IxOTIyZDZhM2RlZGJiMGY0NDUzZWJhYWI4MDhmYg=";
 
@@ -24,4 +24,6 @@ public class Constants
 
     public const string X509SerialNumber =
         "2475382886904809774818644480820936050208702411";
+
+    public const Mode DefaultMode = Mode.developer;
 }

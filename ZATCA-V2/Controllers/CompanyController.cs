@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ZATCA_V2.DTOs;
 using ZATCA_V2.Models;
 using ZATCA_V2.Repositories.Interfaces;
 
@@ -19,7 +20,7 @@ namespace ZATCA_V2.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Company>>> GetAllCompanies()
+        public async Task<ActionResult<List<CompanyDto>>> GetAllCompanies()
         {
             var companies = await _companyRepository.GetAll();
             return Ok(companies);

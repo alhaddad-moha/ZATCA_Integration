@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ZATCA_V2.Data;
@@ -10,6 +11,8 @@ using ZATCA_V2.Helpers;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using ZATCA_V2.CustomValidators;
+using ZATCA_V2.Requests;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,7 +40,8 @@ builder.Services.AddDbContext<DataContext>(options =>
         var password = Environment.GetEnvironmentVariable("DB_PASSWORD");
         var trustedConnection = Environment.GetEnvironmentVariable("TRUSTED_CONNECTION") ?? "True";
 
-        logger.LogInformation("Environment variables - DB_SERVER: {Server}, DB_NAME: {Database}, DB_USER: {User}, DB_PASSWORD: {Password}, TRUSTED_CONNECTION: {TrustedConnection}",
+        logger.LogInformation(
+            "Environment variables - DB_SERVER: {Server}, DB_NAME: {Database}, DB_USER: {User}, DB_PASSWORD: {Password}, TRUSTED_CONNECTION: {TrustedConnection}",
             server ?? "null", database ?? "null", user ?? "null", password ?? "null", trustedConnection);
 
         if (!string.IsNullOrEmpty(server) &&
@@ -45,12 +49,15 @@ builder.Services.AddDbContext<DataContext>(options =>
             !string.IsNullOrEmpty(user) &&
             !string.IsNullOrEmpty(password))
         {
-            connectionString = $"Server={server};Database={database};User Id={user};Password={password};Trusted_Connection={trustedConnection};";
-            logger.LogInformation("Using environment variables for connection string: {ConnectionString}", connectionString);
+            connectionString =
+                $"Server={server};Database={database};User Id={user};Password={password};Trusted_Connection={trustedConnection};";
+            logger.LogInformation("Using environment variables for connection string: {ConnectionString}",
+                connectionString);
         }
         else
         {
-            logger.LogWarning("One or more environment variables for the database connection string are missing. Using default connection string.");
+            logger.LogWarning(
+                "One or more environment variables for the database connection string are missing. Using default connection string.");
         }
     }
     else
@@ -71,11 +78,24 @@ builder.Services.AddScoped<ICompanyInfoRepository, CompanyInfoRepository>();
 builder.Services.AddScoped<ISignedInvoiceRepository, SignedInvoiceRepository>();
 builder.Services.AddScoped<IExternalApiService, ExternalApiService>();
 
+builder.Services.AddScoped<IValidator<BulkInvoiceRequest>>(provider =>
+{
+    var companyRepository = provider.GetRequiredService<ICompanyRepository>();
+    return new BulkInvoiceRequestValidator(companyRepository);
+});
+
+builder.Services.AddScoped<IValidator<SingleInvoiceRequest>>(provider =>
+{
+    var companyRepository = provider.GetRequiredService<ICompanyRepository>();
+    return new SignInvoiceRequestValidator(companyRepository);
+});
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     options.JsonSerializerOptions.WriteIndented = true;
 });
+
+builder.Services.AddValidatorsFromAssemblyContaining<BulkInvoiceRequestValidator>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -87,13 +107,13 @@ builder.Services.AddHealthChecks()
     .AddCheck<SqlHealthCheck>("sql_health_check", HealthStatus.Unhealthy);
 
 builder.Services.AddHealthChecksUI(opt =>
-{
-    opt.SetEvaluationTimeInSeconds(15); // Time in seconds between check evaluations
-    opt.MaximumHistoryEntriesPerEndpoint(60); // Maximum history of checks
-    opt.SetApiMaxActiveRequests(1); // API requests concurrency
-    opt.AddHealthCheckEndpoint("Basic Health Check", "/health"); // Map health check endpoint
-})
-.AddInMemoryStorage();
+    {
+        opt.SetEvaluationTimeInSeconds(120); // Time in seconds between check evaluations
+        opt.MaximumHistoryEntriesPerEndpoint(60); // Maximum history of checks
+        opt.SetApiMaxActiveRequests(1); // API requests concurrency
+        opt.AddHealthCheckEndpoint("Basic Health Check", "/health"); // Map health check endpoint
+    })
+    .AddInMemoryStorage();
 
 var app = builder.Build();
 
