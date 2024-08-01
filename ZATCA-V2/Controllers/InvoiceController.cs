@@ -8,6 +8,7 @@ using ZATCA_V2.Repositories.Interfaces;
 using ZATCA_V2.Requests;
 using ZATCA_V2.Responses.Invoices;
 using ZATCA_V2.Utils;
+using ZATCA_V2.ZATCA;
 using ZatcaIntegrationSDK;
 using ZatcaIntegrationSDK.APIHelper;
 using ZatcaIntegrationSDK.BLL;
@@ -24,18 +25,22 @@ namespace ZATCA_V2.Controllers
         private readonly ICompanyInfoRepository _companyInfoRepository;
         private readonly ICompanyRepository _companyRepository;
         private readonly IValidator<BulkInvoiceRequest> _bulkInvoiceRequestValidator;
-        private Mode _mode = Constants.DefaultMode;
+        private readonly Mode _mode;
+        private readonly IZatcaService _zatcaService;
 
 
         public InvoiceController(ICompanyCredentialsRepository companyCredentialsRepository,
             ISignedInvoiceRepository signedInvoiceRepository, ICompanyInfoRepository companyInfoRepository,
-            ICompanyRepository companyRepository, IValidator<BulkInvoiceRequest> bulkInvoiceRequestValidator)
+            ICompanyRepository companyRepository, IValidator<BulkInvoiceRequest> bulkInvoiceRequestValidator,
+            IZatcaService zatcaService)
         {
             _companyInfoRepository = companyInfoRepository;
             _companyRepository = companyRepository;
             _bulkInvoiceRequestValidator = bulkInvoiceRequestValidator;
+            _zatcaService = zatcaService;
             _companyCredentialsRepository = companyCredentialsRepository;
             _signedInvoiceRepository = signedInvoiceRepository;
+            _mode = Constants.DefaultMode;
         }
 
         [HttpGet("companies/{id}")]
@@ -73,7 +78,6 @@ namespace ZATCA_V2.Controllers
 
                 var latestInvoice = await _signedInvoiceRepository.GetLatestByCompanyId(singleInvoiceRequest.CompanyId);
                 UBLXML ubl = new UBLXML();
-                ApiRequestLogic apireqlogic = new ApiRequestLogic(_mode);
 
                 Invoice inv = CreateMainInvoice(singleInvoiceRequest.InvoiceType, singleInvoiceRequest.Invoice,
                     company);
@@ -103,21 +107,13 @@ namespace ZATCA_V2.Controllers
 
                 SignedInvoice signedInvoice = CreateSignedInvoice(res, company, singleInvoiceRequest.InvoiceType.Name);
 
-                InvoiceReportingRequest invrequestbody = new InvoiceReportingRequest
-                {
-                    invoice = res.EncodedInvoice,
-                    invoiceHash = res.InvoiceHash,
-                    uuid = res.UUID
-                };
+                var invoiceResponse = await _zatcaService.SendInvoiceToZATCA(companyCredentials, res, inv);
 
-                var invoicereportingmodel =
-                    await SendInvoiceToZATCA(apireqlogic, companyCredentials, res, inv);
-
-                if (invoicereportingmodel.StatusCode == 202)
+                if (invoiceResponse.StatusCode == 202)
                 {
-                    if (!string.IsNullOrEmpty(invoicereportingmodel.ErrorMessage))
+                    if (!string.IsNullOrEmpty(invoiceResponse.ErrorMessage))
                     {
-                        return BadRequest(invoicereportingmodel.ErrorMessage);
+                        return BadRequest(invoiceResponse.ErrorMessage);
                     }
                 }
 
@@ -126,7 +122,7 @@ namespace ZATCA_V2.Controllers
 
                 var response = new
                 {
-                    ZATCA = invoicereportingmodel,
+                    ZATCA = invoiceResponse,
                     Res = ExtractInvoiceDetails(res)
                 };
 
@@ -241,22 +237,21 @@ namespace ZATCA_V2.Controllers
                         uuid = res.UUID
                     };
 
-                    var invoicereportingmodel =
-                        await SendInvoiceToZATCA(apireqlogic, companyCredentials, res, inv);
+                    var invoiceResponse = await _zatcaService.SendInvoiceToZATCA(companyCredentials, res, inv);
 
-                    if (string.IsNullOrEmpty(invoicereportingmodel.ErrorMessage))
+                    if (string.IsNullOrEmpty(invoiceResponse.ErrorMessage))
                     {
                         await _signedInvoiceRepository.Create(signedInvoice);
 
                         responses.Add(new
                         {
-                            ZATCA = invoicereportingmodel,
+                            ZATCA = invoiceResponse,
                             Res = ExtractInvoiceDetails(res)
                         });
                     }
                     else
                     {
-                        responses.Add(invoicereportingmodel);
+                        responses.Add(invoiceResponse);
                     }
                 }
 
@@ -377,44 +372,6 @@ namespace ZATCA_V2.Controllers
             };
         }
 
-        private async Task<IInvoiceResponse> SendInvoiceToZATCA(ApiRequestLogic apireqlogic,
-            CompanyCredentials companyCredentials, Result res, Invoice invoice)
-        {
-            string invoiceType = invoice.invoiceTypeCode.Name;
-            InvoiceReportingRequest invrequestbody = new InvoiceReportingRequest
-            {
-                invoice = res.EncodedInvoice,
-                invoiceHash = res.InvoiceHash,
-                uuid = res.UUID
-            };
-            var mode = _mode;
-            bool isStandardInvoice = invoiceType.StartsWith("01");
-
-            switch (mode)
-            {
-                case Mode.developer:
-                    var devResponse = await apireqlogic.CallComplianceInvoiceAPI(companyCredentials.SecretToken,
-                        companyCredentials.Secret, invrequestbody);
-                    return new InvoiceReportingResponseWrapper(devResponse);
-                    break;
-                case Mode.Simulation:
-                    if (isStandardInvoice)
-                    {
-                        var standardResponse = await apireqlogic.CallClearanceAPI(
-                            companyCredentials.SecretToken,
-                            companyCredentials.Secret, invrequestbody);
-                        return new InvoiceClearanceResponseWrapper(standardResponse);
-                    }
-                    else
-                    {
-                        var reportingResponse = await apireqlogic.CallReportingAPI(companyCredentials.SecretToken,
-                            companyCredentials.Secret, invrequestbody);
-                        return new InvoiceReportingResponseWrapper(reportingResponse);
-                    }
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
 
         private SignedInvoice CreateSignedInvoice(Result res, Company company, string invoiceType = "0100000")
         {

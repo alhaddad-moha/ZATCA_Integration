@@ -15,6 +15,7 @@ using ZATCA_V2.CustomValidators;
 using ZATCA_V2.Mappers;
 using ZATCA_V2.Requests;
 using SlackLogger;
+using ZatcaIntegrationSDK.BLL;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +33,6 @@ builder.Logging.AddSlack(options =>
     options.LogLevel = LogLevel.Error;
     options.NotificationLevel = LogLevel.None;
     options.ApplicationName = "ZATCA";
-
 });
 builder.Services.AddDbContext<DataContext>(options =>
 {
@@ -86,6 +86,9 @@ builder.Services.AddScoped<ICompanyCredentialsRepository, CompanyCredentialsRepo
 builder.Services.AddScoped<ICompanyInfoRepository, CompanyInfoRepository>();
 builder.Services.AddScoped<ISignedInvoiceRepository, SignedInvoiceRepository>();
 builder.Services.AddScoped<IExternalApiService, ExternalApiService>();
+
+
+builder.Services.AddScoped<IZatcaService, ZatcaService>();
 
 builder.Services.AddScoped<IValidator<BulkInvoiceRequest>>(provider =>
 {

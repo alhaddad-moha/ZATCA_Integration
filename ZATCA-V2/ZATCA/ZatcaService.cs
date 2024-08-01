@@ -1,51 +1,55 @@
-﻿using ZatcaIntegrationSDK.BLL;
-using ZatcaIntegrationSDK.HelperContracts;
+﻿using ZATCA_V2.Helpers;
+using ZATCA_V2.Models;
+using ZATCA_V2.Responses.Invoices;
 using ZatcaIntegrationSDK;
+using ZatcaIntegrationSDK.APIHelper;
+using ZatcaIntegrationSDK.BLL;
+using ZatcaIntegrationSDK.HelperContracts;
 
 namespace ZATCA_V2.ZATCA
 {
     public class ZatcaService : IZatcaService
     {
-        private readonly ApiRequestLogic _apiRequestLogic;
-
-        public ZatcaService(ApiRequestLogic apiRequestLogic)
+        public ZatcaService()
         {
-            _apiRequestLogic = apiRequestLogic;
+            // Get the mode from constants or configuration
         }
 
-        public async Task<InvoiceClearanceResponse> SendClearanceAsync(Invoice inv, Result res)
+        public async Task<IInvoiceResponse> SendInvoiceToZATCA(CompanyCredentials companyCredentials, Result res,
+            Invoice invoice)
         {
-            var invRequestBody = new InvoiceReportingRequest
+            Mode mode = Constants.DefaultMode;
+            ApiRequestLogic apiRequestLogic = new ApiRequestLogic(mode);
+            string invoiceType = invoice.invoiceTypeCode.Name;
+            InvoiceReportingRequest invRequestBody = new InvoiceReportingRequest
             {
                 invoice = res.EncodedInvoice,
                 invoiceHash = res.InvoiceHash,
                 uuid = res.UUID
             };
 
-            var secretKey = "lHntHtEGWi+ZJtssv167Dy+R64uxf/PTMXg3CEGYfvM=";
-            return await _apiRequestLogic.CallClearanceAPI(Utility.ToBase64Encode(inv.cSIDInfo.CertPem), secretKey,
-                invRequestBody);
-        }
+            bool isStandardInvoice = invoiceType.StartsWith("01");
 
-        public async Task<InvoiceReportingResponse> SendReportingAsync(Invoice inv, Result res)
-        {
-            var invRequestBody = new InvoiceReportingRequest
+            if (mode == Mode.developer)
             {
-                invoice = res.EncodedInvoice,
-                invoiceHash = res.InvoiceHash,
-                uuid = res.UUID
-            };
+                var devResponse = await apiRequestLogic.CallComplianceInvoiceAPI(companyCredentials.SecretToken,
+                    companyCredentials.Secret, invRequestBody);
+                return new InvoiceReportingResponseWrapper(devResponse);
+            }
+            else
+            {
+                if (isStandardInvoice)
+                {
+                    var standardResponse = await apiRequestLogic.CallClearanceAPI(
+                        companyCredentials.SecretToken,
+                        companyCredentials.Secret, invRequestBody);
+                    return new InvoiceClearanceResponseWrapper(standardResponse);
+                }
 
-
-            var secretKey = "lHntHtEGWi+ZJtssv167Dy+R64uxf/PTMXg3CEGYfvM=";
-            return await _apiRequestLogic.CallReportingAPI(Utility.ToBase64Encode(inv.cSIDInfo.CertPem), secretKey,
-                invRequestBody);
-        }
-
-
-        private void DetermineMode()
-        {
-            // Logic to determine mode
+                var reportingResponse = await apiRequestLogic.CallReportingAPI(companyCredentials.SecretToken,
+                    companyCredentials.Secret, invRequestBody);
+                return new InvoiceReportingResponseWrapper(reportingResponse);
+            }
         }
     }
 }
