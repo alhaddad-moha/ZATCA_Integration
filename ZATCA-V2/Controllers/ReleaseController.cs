@@ -1,8 +1,4 @@
-﻿using System.Text;
-using System.Text.Json;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ZATCA_V2.Data;
 using ZATCA_V2.DTOs;
@@ -15,7 +11,6 @@ using ZATCA_V2.Utils;
 using ZATCA_V2.ZATCA;
 using ZatcaIntegrationSDK;
 using ZatcaIntegrationSDK.APIHelper;
-using ZatcaIntegrationSDK.BLL;
 using ZatcaIntegrationSDK.HelperContracts;
 
 namespace ZATCA_V2.Controllers
@@ -112,11 +107,11 @@ namespace ZATCA_V2.Controllers
                     DeviceSerialNumber = companyReleaseRequest.DeviceSerialNumber,
                     CompanyCredentials = new List<CompanyCredentials>() // Initialize the CompanyCredentials list
                 };
-                await _companyRepository.Create(company);
 
                 Invoice inv = GenerateInvoice(company);
 
                 CertificateRequest certrequest = GetCSRRequestData(companyReleaseRequest);
+
 
                 CSIDGenerator generator = new CSIDGenerator(_mode);
                 CertificateResponse response =
@@ -124,6 +119,8 @@ namespace ZATCA_V2.Controllers
 
                 if (response.IsSuccess)
                 {
+                    await _companyRepository.Create(company);
+
                     var binarySecurityToken = Utility.ToBase64Encode(response.CSID);
 
                     var companyCredentials = new CompanyCredentials
@@ -299,7 +296,7 @@ namespace ZATCA_V2.Controllers
         {
             CertificateRequest certrequest = new CertificateRequest();
             //TODO get OTP 
-            certrequest.OTP = "1234";
+            certrequest.OTP = companyReleaseRequest.OTP;
             certrequest.CommonName = companyReleaseRequest.CommonName;
             certrequest.OrganizationName = companyReleaseRequest.OrganizationName;
             certrequest.OrganizationUnitName = companyReleaseRequest.OrganizationUnitName;
