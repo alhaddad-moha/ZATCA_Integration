@@ -1,39 +1,49 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoMapper;
+using ZATCA_V2.DTOs;
 using ZATCA_V2.Models;
 using ZATCA_V2.Repositories.Interfaces;
+using ZATCA_V2.Responses;
 
 namespace ZATCA_V2.Controllers
 {
-    
     [ApiController]
     [Route("api/companies")]
     public class CompanyController : ControllerBase
     {
         private readonly ICompanyRepository _companyRepository;
 
-        public CompanyController(ICompanyRepository companyRepository)
+        private readonly IMapper _mapper;
+
+        public CompanyController(ICompanyRepository companyRepository, IMapper mapper)
         {
             _companyRepository = companyRepository;
+            _mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Company>>> GetAllCompanies()
+        public async Task<IActionResult> GetAllCompanies()
         {
             var companies = await _companyRepository.GetAll();
-            return Ok(companies);
+            var companyDtos = _mapper.Map<List<CompanyDto>>(companies);
+            var response = new ApiResponse<List<CompanyDto>>(200, "Got Data Successfully", companyDtos);
+            return response;
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Company>> GetCompanyById(int id)
+        public async Task<IActionResult> GetCompanyById(int id)
         {
             var company = await _companyRepository.GetById(id);
 
             if (company == null)
-                return NotFound();
+            {
+                return new ApiResponse<object>(404, "Company not found.");
+            }
 
-            return Ok(company);
+            var companyDtos = _mapper.Map<CompanyDto>(company);
+            return new ApiResponse<CompanyDto>(200, "Got Data Successfully", companyDtos);
         }
 
         [HttpPost]

@@ -33,7 +33,7 @@ namespace ZATCA_V2.Controllers
         }
 
         [HttpGet("generate")]
-        public IActionResult Generate()
+        public async Task<IActionResult> Generate()
         {
             UBLXML ubl = new UBLXML();
             Invoice inv = new Invoice();
@@ -67,7 +67,7 @@ namespace ZATCA_V2.Controllers
             inv.paymentmeans.Add(paymentMeans);
             inv.paymentmeans.Add(paymentMeans1);
 
-        
+
             AccountingCustomerParty customerParty = InvoiceHelper.CreateCustomerParty(
                 "123456", "CRN", "Kemarat Street,", "", "3724", "9833", "Jeddah",
                 "15385", "Makkah", "Alfalah", "SA", "buyyername", "301121971100003");
@@ -124,13 +124,13 @@ namespace ZATCA_V2.Controllers
 
             string csr = Helper.ReadFileToString(Constants.CSR_Path);
 
-            tokenresponse = apireqlogic.GetComplianceCSIDAPI("123456", csr);
+            tokenresponse = await apireqlogic.GetComplianceCSIDAPI("123456", csr);
             if (string.IsNullOrEmpty(tokenresponse.ErrorMessage))
             {
                 invrequestbody.invoice = res.EncodedInvoice;
                 invrequestbody.invoiceHash = res.InvoiceHash;
                 invrequestbody.uuid = res.UUID;
-                InvoiceReportingResponse invoicereportingmodel =
+                InvoiceReportingResponse invoicereportingmodel = await
                     apireqlogic.CallComplianceInvoiceAPI(tokenresponse.BinarySecurityToken, tokenresponse.Secret,
                         invrequestbody);
                 //InvoiceReportingResponse invoicereportingmodel = apireqlogic.CallReportingAPI(Utility.ToBase64Encode(inv.cSIDInfo.CertPem), "cuqeJ5yQPoGInAF4MrynTQYOIwAYXN1jhpjFgRkga04=", invrequestbody);
@@ -345,7 +345,7 @@ namespace ZATCA_V2.Controllers
             invrequestbody.invoiceHash = res.InvoiceHash;
             invrequestbody.uuid = res.UUID;
             InvoiceReportingResponse invoicereportingmodel =
-                apireqlogic.CallComplianceInvoiceAPI(companyCredentials.SecretToken, companyCredentials.Secret,
+                await apireqlogic.CallComplianceInvoiceAPI(companyCredentials.SecretToken, companyCredentials.Secret,
                     invrequestbody);
             //for production
 
@@ -456,8 +456,8 @@ namespace ZATCA_V2.Controllers
 
             return Ok(responses);
         }
-        
-        
+
+
         [HttpPost("single-standard-dynamic")]
         public async Task<IActionResult> GenerateSingleDynamicStandard(BulkInvoiceRequest bulkInvoiceRequest)
         {
@@ -530,7 +530,7 @@ namespace ZATCA_V2.Controllers
                 invoiceData.CustomerInformation.Address.StreetName,
                 invoiceData.CustomerInformation.Address.AdditionalStreetName,
                 invoiceData.CustomerInformation.Address.BuildingNumber,
-                invoiceData.CustomerInformation.Address.PlotIdentification,
+                "9833",
                 invoiceData.CustomerInformation.Address.CityName,
                 invoiceData.CustomerInformation.Address.PostalZone,
                 invoiceData.CustomerInformation.Address.CountrySubentity,
@@ -610,7 +610,7 @@ namespace ZATCA_V2.Controllers
             invrequestbody.invoiceHash = res.InvoiceHash;
             invrequestbody.uuid = res.UUID;
             InvoiceReportingResponse invoicereportingmodel =
-                apireqlogic.CallComplianceInvoiceAPI(companyCredentials.SecretToken, companyCredentials.Secret,
+                await apireqlogic.CallComplianceInvoiceAPI(companyCredentials.SecretToken, companyCredentials.Secret,
                     invrequestbody);
             //for production
 
@@ -672,7 +672,7 @@ namespace ZATCA_V2.Controllers
                 invoiceData.CustomerInformation.Address.StreetName,
                 invoiceData.CustomerInformation.Address.AdditionalStreetName,
                 invoiceData.CustomerInformation.Address.BuildingNumber,
-                invoiceData.CustomerInformation.Address.PlotIdentification,
+                "9833",
                 invoiceData.CustomerInformation.Address.CityName,
                 invoiceData.CustomerInformation.Address.PostalZone,
                 invoiceData.CustomerInformation.Address.CountrySubentity,
@@ -730,7 +730,7 @@ namespace ZATCA_V2.Controllers
                 uuid = res.UUID
             };
 
-            return apireqlogic.CallComplianceInvoiceAPI(companyCredentials.SecretToken, companyCredentials.Secret,
+            return await apireqlogic.CallComplianceInvoiceAPI(companyCredentials.SecretToken, companyCredentials.Secret,
                 invrequestbody);
         }
 

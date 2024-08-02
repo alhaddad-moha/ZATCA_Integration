@@ -10,6 +10,7 @@ using ZATCA_V2.Models;
 using ZATCA_V2.Repositories;
 using ZATCA_V2.Repositories.Interfaces;
 using ZATCA_V2.ZATCA;
+using ZatcaIntegrationSDK.APIHelper;
 using ZatcaIntegrationSDK.BLL;
 using ZatcaIntegrationSDK.HelperContracts;
 
@@ -38,6 +39,7 @@ namespace ZATCA_V2.Controllers
             _externalApiService = externalApiService ?? throw new ArgumentNullException(nameof(externalApiService));
             _context = dataContext;
         }
+
 
         // Health check endpoint
         [HttpGet("health")]
@@ -80,6 +82,7 @@ namespace ZATCA_V2.Controllers
 
             return Ok(healthStatus);
         }
+
 
         [HttpPost("generateCSR/{companyId}")]
         public async Task<IActionResult> GenerateCsr(int companyId)
@@ -197,6 +200,7 @@ namespace ZATCA_V2.Controllers
 
                 var binarySecurityToken = jsonResponse.GetProperty("binarySecurityToken").GetString();
                 var secret = jsonResponse.GetProperty("secret").GetString();
+                var requestId = jsonResponse.GetProperty("requestID").GetInt32();
 
                 string decodedCertificate = Helper.DecodeFromBase64(binarySecurityToken);
 
@@ -207,6 +211,7 @@ namespace ZATCA_V2.Controllers
                     Secret = secret,
                     SecretToken = binarySecurityToken,
                     PrivateKey = keyData,
+                    requestId = requestId
                 };
 
                 company.CompanyCredentials.Add(companyCredentials);
@@ -250,7 +255,7 @@ namespace ZATCA_V2.Controllers
                 var csrData = Helper.ReadFromFile(filteredCsrPath);
                 ApiRequestLogic apireqlogic = new ApiRequestLogic();
                 ComplianceCsrResponse tokenresponse = new ComplianceCsrResponse();
-                tokenresponse = apireqlogic.GetComplianceCSIDAPI("12345", csrData);
+                tokenresponse = await apireqlogic.GetComplianceCSIDAPI("12345", csrData);
                 var binarySecurityToken = tokenresponse.BinarySecurityToken;
                 var secret = tokenresponse.Secret;
 
@@ -261,7 +266,7 @@ namespace ZATCA_V2.Controllers
                     status = 201,
                     Response = tokenresponse,
                     Secret = secret,
-                    SecretToken = binarySecurityToken,
+                    SecretToken = binarySecurityToken
                 });
             }
             catch (Exception ex)
@@ -275,6 +280,7 @@ namespace ZATCA_V2.Controllers
                 });
             }
         }
+
 
         private string CreateConfigFile(CertificateConfiguration certificateConfig, int companyId)
         {

@@ -42,6 +42,43 @@ namespace ZATCA_V2.Utils
 
             return supplierParty;
         }
+        public static AccountingSupplierParty CreateSupplierPartyFromCompany(Company companyInfo)
+        {
+            // Create an instance of the SupplierParty class
+            AccountingSupplierParty supplierParty = new AccountingSupplierParty
+            {
+                partyIdentification = new PartyIdentification
+                {
+                    ID = companyInfo.CommercialRegistrationNumber,
+                    schemeID = companyInfo.SchemeId
+                },
+                postalAddress = new PostalAddress
+                {
+                    StreetName = companyInfo.StreetName,
+                    AdditionalStreetName = companyInfo.AdditionalStreetName,
+                    BuildingNumber = companyInfo.BuildingNumber,
+                    PlotIdentification = companyInfo.PlotIdentification,
+                    CityName = companyInfo.CityName,
+                    PostalZone = companyInfo.PostalZone,
+                    CountrySubentity = companyInfo.CountrySubentity,
+                    CitySubdivisionName = companyInfo.CitySubdivisionName,
+                    country = new Country
+                    {
+                        IdentificationCode = companyInfo.IdentificationCode
+                    }
+                },
+                partyLegalEntity = new PartyLegalEntity
+                {
+                    RegistrationName = companyInfo.OrganizationName
+                },
+                partyTaxScheme = new PartyTaxScheme
+                {
+                    CompanyID = companyInfo.TaxRegistrationNumber
+                }
+            };
+
+            return supplierParty;
+        }
 
         public static AccountingCustomerParty CreateCustomerParty(
             string partyId, string schemeId, string streetName, string? additionalStreetName,

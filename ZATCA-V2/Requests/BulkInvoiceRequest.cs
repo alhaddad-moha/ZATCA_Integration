@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using ZATCA_V2.CustomValidators;
+using ZATCA_V2.DTOs;
 using ZatcaIntegrationSDK;
 
 namespace ZATCA_V2.Requests;
@@ -34,11 +35,13 @@ public class InvoiceData
     public string LatestDeliveryDate { get; set; }
 
     [Required] public PaymentDetails PaymentDetails { get; set; }
-    [Required] public CustomerInformation CustomerInformation { get; set; }
+    [Required] public CustomerInformation? CustomerInformation { get; set; }
 
     [Required] public allowanceCharge AllowanceCharge { get; set; }
 
+    /*
     [Required] public LegalTotal LegalTotal { get; set; }
+    */
 
     [Required] public ICollection<InvoiceItem>? InvoiceItems { get; set; }
 }
@@ -104,7 +107,7 @@ public class CustomerInformation
 
     [Required] public string CommercialNumberType { get; set; } = "CRN";
 
-    public Address? Address { get; set; }
+    public AddressDto Address { get; set; }
 
     [Required] public string RegistrationName { get; set; }
 
@@ -134,7 +137,6 @@ public class Address
     public string StreetName { get; set; }
     public string? AdditionalStreetName { get; set; }
     public string BuildingNumber { get; set; }
-    public string PlotIdentification { get; set; }
     public string CityName { get; set; }
     public string PostalZone { get; set; }
     public string CountrySubentity { get; set; }

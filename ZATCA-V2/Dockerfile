@@ -13,7 +13,6 @@ RUN dotnet restore
 RUN dotnet publish -c Release -o out
 
 # Set the entry point for the container
-ENTRYPOINT ["dotnet", "ZATCA-V2.dll"]  # Replace with your actual DLL name
-
+ENTRYPOINT ["dotnet", "ZATCA-V2.dll"]  
 # Expose the port where the API will listen (usually port 80)
 EXPOSE 80

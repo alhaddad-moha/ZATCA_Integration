@@ -9,6 +9,7 @@
         public string CSR { get; set; }
         public string? SecretToken { get; set; }
         public string? Secret { get; set; }
+        public int? requestId { get; set; }
         public int CompanyId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public Company Company { get; set; }
