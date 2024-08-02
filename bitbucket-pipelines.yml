@@ -28,6 +28,7 @@ pipelines:
           caches:
             - pip
           script:
+            - yum install -y gettext
             - curl -o /usr/local/bin/ecs-cli https://amazon-ecs-cli.s3.amazonaws.com/ecs-cli-linux-amd64-latest
             - chmod +x /usr/local/bin/ecs-cli
             - ecs-cli --version
