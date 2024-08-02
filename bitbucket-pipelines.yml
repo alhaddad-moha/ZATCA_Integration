@@ -3,23 +3,23 @@ image: amazon/aws-cli
 pipelines:
   branches:
     main:
-      - step:
-          name: build push docker
-          services:
-            - docker
-          caches:
-            - docker
-          script:
-            - IMAGE="zatca"
-            - docker build -t $IMAGE .
-            - docker tag $IMAGE $IMAGE:$BITBUCKET_COMMIT
-            - pipe: atlassian/aws-ecr-push-image:2.4.0
-              variables:
-                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-                AWS_DEFAULT_REGION: eu-west-1
-                IMAGE_NAME: zatca
-                TAGS: $BITBUCKET_COMMIT
+      # - step:
+      #     name: build push docker
+      #     services:
+      #       - docker
+      #     caches:
+      #       - docker
+      #     script:
+      #       - IMAGE="zatca"
+      #       - docker build -t $IMAGE .
+      #       - docker tag $IMAGE $IMAGE:$BITBUCKET_COMMIT
+      #       - pipe: atlassian/aws-ecr-push-image:2.4.0
+      #         variables:
+      #           AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      #           AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+      #           AWS_DEFAULT_REGION: eu-west-1
+      #           IMAGE_NAME: zatca
+      #           TAGS: $BITBUCKET_COMMIT
       - step:
           name: deploy to ecs
           deployment: staging
@@ -48,7 +48,9 @@ pipelines:
             - sed "s|{{TAG}}|`echo $BITBUCKET_COMMIT`|g" -i docker-compose.yml
             - sed "s|{{ENV}}|`echo staging`|g" -i docker-compose.yml
             # - sed "s|{{APPNAME}}|`echo ${app_name}`|g" -i docker-compose.yml
-            - envsubst < ecs-params.yml.template >ecs-params.yml 
+            - envsubst < ecs-params.yml.template >ecs-params.yml
+            - echo $clustername
+            - ecs-cli configure --region $AWS_DEFAULT_REGION --cluster $clustername --default-launch-type FARGATE --config-name wusool-staging
             - ecs-cli compose --project-name zatca-staging service up \
                 --create-log-groups --region eu-west-1 \
                 --target-group-arn $target_group_arn \
