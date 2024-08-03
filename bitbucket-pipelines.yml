@@ -1,6 +1,60 @@
 image: amazon/aws-cli
 
 pipelines:
+ custom:
+    migration-run:
+      - step:
+          name: build push docker migraiton
+          services:
+            - docker
+          caches:
+            - docker
+          script:
+            - IMAGE="zatca"
+            - docker build -f Dockerfile-migration-t $IMAGE .
+            - docker tag $IMAGE $IMAGE:migration
+            - pipe: atlassian/aws-ecr-push-image:2.4.0
+              variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_DEFAULT_REGION: eu-west-1
+                IMAGE_NAME: zatca
+                TAGS: migration
+      - step:
+          name: deploy migration
+          deployment: migration
+          services:
+            - docker
+          caches:
+            - pip
+          script:
+            - yum install -y gettext
+            - curl -o /usr/local/bin/ecs-cli https://amazon-ecs-cli.s3.amazonaws.com/ecs-cli-linux-amd64-latest
+            - chmod +x /usr/local/bin/ecs-cli
+            - ecs-cli --version
+            - aws --version
+            # get the cluster name, target group arn, vpc, ecsTaskExecutionRole, subnets, security group
+            - export AWS_DEFAULT_REGION=eu-west-1
+            - export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+            - export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+            - export clustername=$(aws cloudformation describe-stacks --stack-name wusool-staging --query 'Stacks[0].Outputs[?OutputKey==`ClusterName`].OutputValue' --output text)
+            - export target_group_arn=$(aws cloudformation describe-stack-resources --stack-name wusool-staging-alb | jq -r '.[][] | select(.ResourceType=="AWS::ElasticLoadBalancingV2::TargetGroup").PhysicalResourceId')
+            - export vpc=$(aws cloudformation describe-stacks --stack-name wusool-staging --query 'Stacks[0].Outputs[?OutputKey==`VpcId`].OutputValue' --output text)
+            - export ecsTaskExecutionRole=$(aws cloudformation describe-stacks --stack-name wusool-staging --query 'Stacks[0].Outputs[?OutputKey==`ECSTaskExecutionRole`].OutputValue' --output text)
+            - export subnet_1=$(aws cloudformation describe-stacks --stack-name wusool-staging --query 'Stacks[0].Outputs[?OutputKey==`PrivateSubnetOne`].OutputValue' --output text)
+            - export subnet_2=$(aws cloudformation describe-stacks --stack-name wusool-staging --query 'Stacks[0].Outputs[?OutputKey==`PrivateSubnetTwo`].OutputValue' --output text)
+            - export subnet_3=$(aws cloudformation describe-stacks --stack-name wusool-staging --query 'Stacks[0].Outputs[?OutputKey==`PrivateSubnetThree`].OutputValue' --output text)
+            - export security_group=$(aws cloudformation describe-stacks --stack-name wusool-staging --query 'Stacks[0].Outputs[?OutputKey==`ContainerSecurityGroup`].OutputValue' --output text)
+            - sed "s|{{ENV}}|`echo staging`|g" -i docker-compose-migration.yml
+            # - sed "s|{{APPNAME}}|`echo ${app_name}`|g" -i docker-compose.yml
+            - envsubst < ecs-params.yml.template >ecs-params.yml
+            - echo $clustername
+            - ecs-cli configure --region $AWS_DEFAULT_REGION --cluster $clustername --default-launch-type FARGATE --config-name wusool-staging
+            - ecs-cli compose --file docker-compose-migration.yml --project-name zatca-staging-migration run \
+                --region eu-west-1 \
+                --cluster-config wusool-staging
+
+
   branches:
     main:
       - step:

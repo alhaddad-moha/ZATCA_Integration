@@ -1,0 +1,19 @@
+version: '3'
+services:
+  migration:
+    image: 198331545801.dkr.ecr.eu-west-1.amazonaws.com/zatca:migration
+    environment:
+      - DB_SERVER=zatca-stg-db.chi2yussgkvr.eu-west-1.rds.amazonaws.com
+      - DB_USER=admin
+      - DB_PASSWORD=MkXGTRXIxlrilSrKykqS
+      - DB_NAME=zatca
+      - TRUSTED_CONNECTION=False
+      - ASPNETCORE_ENVIRONMENT={{ENV}}
+    entrypoint: ["dotnet", "ef", "database", "update", "--project", "/src/ZATCA-V2/"]
+    logging:
+      driver: awslogs
+      options:
+        awslogs-group: zatca-{{ENV}}
+        awslogs-region: eu-west-1
+        awslogs-stream-prefix: zatca-{{ENV}}
+
