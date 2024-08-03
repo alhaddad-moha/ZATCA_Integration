@@ -5,25 +5,16 @@ using ZATCA_V2.Repositories.Interfaces;
 
 namespace ZATCA_V2.Repositories
 {
-    public class CompanyRepository : ICompanyRepository
+    public class CompanyRepository : BaseRepository<Company>, ICompanyRepository
     {
         private readonly DataContext _context;
 
-        public CompanyRepository(DataContext context)
+        public CompanyRepository(DataContext context) : base(context)
         {
             _context = context;
         }
 
-        public async Task<List<Company>> GetAll()
-        {
-            return await _context.Companies.Include(c => c.CompanyCredentials).ToListAsync();
-        }
 
-        public async Task<Company?> GetById(int id)
-        {
-            return await _context.Companies.Include(c => c.CompanyCredentials).FirstOrDefaultAsync(c => c.Id == id);
-        }
-        
         public async Task<Company?> FindByTaxRegistrationNumber(string taxRegistrationNumber)
         {
             return await _context.Companies.FirstOrDefaultAsync(c => c.TaxRegistrationNumber == taxRegistrationNumber);
@@ -31,29 +22,8 @@ namespace ZATCA_V2.Repositories
 
         public async Task<Company?> FindByCommercialRegistrationNumber(string commercialRegistrationNumber)
         {
-            return await _context.Companies.FirstOrDefaultAsync(c => c.CommercialRegistrationNumber == commercialRegistrationNumber);
-        }
-
-        public async Task Create(Company company)
-        {
-            _context.Companies.Add(company);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task Update(Company company)
-        {
-            _context.Entry(company).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task Delete(int id)
-        {
-            var company = await _context.Companies.FindAsync(id);
-            if (company != null)
-            {
-                _context.Companies.Remove(company);
-                await _context.SaveChangesAsync();
-            }
+            return await _context.Companies.FirstOrDefaultAsync(c =>
+                c.CommercialRegistrationNumber == commercialRegistrationNumber);
         }
     }
 }

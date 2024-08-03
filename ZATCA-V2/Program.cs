@@ -85,6 +85,8 @@ builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<ICompanyCredentialsRepository, CompanyCredentialsRepository>();
 builder.Services.AddScoped<ICompanyInfoRepository, CompanyInfoRepository>();
 builder.Services.AddScoped<ISignedInvoiceRepository, SignedInvoiceRepository>();
+builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+
 builder.Services.AddScoped<IExternalApiService, ExternalApiService>();
 
 
