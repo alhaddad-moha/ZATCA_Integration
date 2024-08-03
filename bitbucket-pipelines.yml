@@ -22,7 +22,7 @@ pipelines:
                 TAGS: migration
       - step:
           name: deploy migration
-          deployment: migration
+          deployment: staging
           services:
             - docker
           caches:
