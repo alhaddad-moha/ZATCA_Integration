@@ -1,7 +1,7 @@
 image: amazon/aws-cli
 
 pipelines:
- custom:
+  custom:
     migration-run:
       - step:
           name: build push docker migraiton
@@ -53,7 +53,6 @@ pipelines:
             - ecs-cli compose --file docker-compose-migration.yml --project-name zatca-staging-migration run \
                 --region eu-west-1 \
                 --cluster-config wusool-staging
-
 
   branches:
     main:
