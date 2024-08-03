@@ -1,4 +1,4 @@
-image: python:3.7.4-alpine3.10
+image: amazon/aws-cli
 
 pipelines:
   branches:
@@ -28,11 +28,7 @@ pipelines:
           caches:
             - pip
           script:
-            - apk update
-            - apk add --no-cache bash curl unzip groff less libc6-compat libstdc++ libgcc
-            - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            - unzip awscliv2.zip && ./aws/install
-            - chmod +x /usr/local/bin/aws
+            - yum install -y gettext
             - curl -o /usr/local/bin/ecs-cli https://amazon-ecs-cli.s3.amazonaws.com/ecs-cli-linux-amd64-latest
             - chmod +x /usr/local/bin/ecs-cli
             - ecs-cli --version
@@ -52,7 +48,9 @@ pipelines:
             - sed "s|{{TAG}}|`echo $BITBUCKET_COMMIT`|g" -i docker-compose.yml
             - sed "s|{{ENV}}|`echo staging`|g" -i docker-compose.yml
             # - sed "s|{{APPNAME}}|`echo ${app_name}`|g" -i docker-compose.yml
-            - envsubst < ecs-params.yml.template >ecs-params.yml 
+            - envsubst < ecs-params.yml.template >ecs-params.yml
+            - echo $clustername
+            - ecs-cli configure --region $AWS_DEFAULT_REGION --cluster $clustername --default-launch-type FARGATE --config-name wusool-staging
             - ecs-cli compose --project-name zatca-staging service up \
                 --create-log-groups --region eu-west-1 \
                 --target-group-arn $target_group_arn \
