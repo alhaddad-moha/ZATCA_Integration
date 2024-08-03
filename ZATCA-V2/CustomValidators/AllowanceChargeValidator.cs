@@ -3,7 +3,7 @@
 using FluentValidation;
 using ZATCA_V2.Requests;
 
-public class AllowanceChargeValidator : AbstractValidator<allowanceCharge>
+public class AllowanceChargeValidator : AbstractValidator<AllowanceCharge>
 {
     public AllowanceChargeValidator()
     {

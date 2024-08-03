@@ -5,15 +5,13 @@ using ZatcaIntegrationSDK;
 using ZatcaIntegrationSDK.APIHelper;
 using ZatcaIntegrationSDK.BLL;
 using ZatcaIntegrationSDK.HelperContracts;
+using Invoice = ZatcaIntegrationSDK.Invoice;
+
 
 namespace ZATCA_V2.ZATCA
 {
     public class ZatcaService : IZatcaService
     {
-        public ZatcaService()
-        {
-            // Get the mode from constants or configuration
-        }
 
         public async Task<IInvoiceResponse> SendInvoiceToZATCA(CompanyCredentials companyCredentials, Result res,
             Invoice invoice)
