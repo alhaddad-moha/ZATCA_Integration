@@ -9,7 +9,7 @@ services:
       - DB_NAME=zatca
       - TRUSTED_CONNECTION=False
       - ASPNETCORE_ENVIRONMENT={{ENV}}
-    entrypoint: ["dotnet", "ef", "database", "update", "--project", "/src/ZATCA-V2/"]
+    entrypoint: ["dotnet", "ef", "database", "update", "--project", "/src/ZATCA-V2/","--context", "DataContext"]
     logging:
       driver: awslogs
       options:
