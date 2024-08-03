@@ -46,14 +46,10 @@ pipelines:
             - export subnet_3=$(aws cloudformation describe-stacks --stack-name wusool-staging --query 'Stacks[0].Outputs[?OutputKey==`PrivateSubnetThree`].OutputValue' --output text)
             - export security_group=$(aws cloudformation describe-stacks --stack-name wusool-staging --query 'Stacks[0].Outputs[?OutputKey==`ContainerSecurityGroup`].OutputValue' --output text)
             - sed "s|{{ENV}}|`echo staging`|g" -i docker-compose-migration.yml
-            # - sed "s|{{APPNAME}}|`echo ${app_name}`|g" -i docker-compose.yml
             - envsubst < ecs-params.yml.template >ecs-params.yml
             - echo $clustername
             - ecs-cli configure --region $AWS_DEFAULT_REGION --cluster $clustername --default-launch-type FARGATE --config-name wusool-staging
-            - ecs-cli compose --file docker-compose-migration.yml --project-name zatca-staging-migration run \
-                --region eu-west-1 \
-                --cluster-config wusool-staging
-
+            - ecs-cli compose --file docker-compose-migration.yml --project-name zatca-staging-migration run --region eu-west-1 --cluster-config wusool-staging
   branches:
     main:
       - step:
