@@ -12,7 +12,7 @@ namespace ZATCA_V2.DTOs
         public string AdditionalStreetName { get; set; }
 
         [Required(ErrorMessage = "BuildingNumber is required.")]
-        [StringLength(3, ErrorMessage = "BuildingNumber must be 4 characters long.")]
+        [StringLength(4, ErrorMessage = "BuildingNumber must be 4 characters long.")]
 
         public string BuildingNumber { get; set; }
 
