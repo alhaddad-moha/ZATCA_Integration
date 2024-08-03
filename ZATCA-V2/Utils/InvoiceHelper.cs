@@ -1,10 +1,91 @@
 ﻿using ZATCA_V2.Models;
+using ZATCA_V2.Requests;
 using ZatcaIntegrationSDK;
+using AllowanceCharge = ZatcaIntegrationSDK.AllowanceCharge;
+using Invoice = ZatcaIntegrationSDK.Invoice;
 
 namespace ZATCA_V2.Utils
 {
     public class InvoiceHelper
     {
+        public static Invoice CreateMainInvoice(InvoiceType invoiceType, InvoiceData invoiceData, Company companyInfo)
+        {
+            Invoice inv = new Invoice();
+
+            inv.ID = invoiceData.Id;
+            inv.IssueDate = invoiceData.IssueDate;
+            inv.IssueTime = invoiceData.IssueTime;
+
+            inv.invoiceTypeCode.id =
+                invoiceType.Id; // Use the parameter 'invoicesType' instead of 'bulkInvoiceRequest.InvoicesType'
+
+            inv.invoiceTypeCode.Name = invoiceType.Name;
+            inv.DocumentCurrencyCode = invoiceType.DocumentCurrencyCode;
+
+            inv.TaxCurrencyCode = invoiceType.TaxCurrencyCode;
+
+            if (inv.invoiceTypeCode.id == 383 || inv.invoiceTypeCode.id == 381)
+            {
+                // فى حالة ان اشعار دائن او مدين فقط هانكتب رقم الفاتورة اللى اصدرنا الاشعار ليها
+                // in case of return sales invoice or debit notes we must mention the original sales invoice number
+                InvoiceDocumentReference invoiceDocumentReference = new InvoiceDocumentReference();
+                invoiceDocumentReference.ID =
+                    invoiceData.InvoiceDocumentReferenceID; // mandatory in case of return sales invoice or debit notes
+                inv.billingReference.invoiceDocumentReferences.Add(invoiceDocumentReference);
+            }
+
+
+            inv.AdditionalDocumentReferenceICV.UUID = invoiceData.AddtionalId;
+
+            PaymentMeans paymentMeans = new PaymentMeans();
+            paymentMeans.PaymentMeansCode = invoiceData.PaymentDetails.Type;
+            if (inv.invoiceTypeCode.id == 383 || inv.invoiceTypeCode.id == 381)
+            {
+                paymentMeans.InstructionNote =
+                    invoiceData.PaymentDetails
+                        .InstructionNote; //the reason of return invoice - debit notes // manatory only for return invoice - debit notes 
+            }
+
+            inv.paymentmeans.Add(paymentMeans);
+
+            inv.delivery.ActualDeliveryDate = invoiceData.ActualDeliveryDate;
+            inv.delivery.LatestDeliveryDate = invoiceData.LatestDeliveryDate;
+
+            AccountingSupplierParty supplierParty = CreateSupplierPartyFromCompany(companyInfo);
+
+            inv.SupplierParty = supplierParty;
+
+            if (invoiceType.Name.StartsWith("01"))
+            {
+                if (invoiceData.CustomerInformation == null)
+                {
+                    throw new Exception("Customer Information is required for standard invoice");
+                }
+
+                AccountingCustomerParty customerParty =
+                    CreateCustomerPartyFromDto(invoiceData.CustomerInformation);
+
+                inv.CustomerParty = customerParty;
+            }
+
+            if (invoiceData.AllowanceCharge != null)
+            {
+                AllowanceCharge allowanceCharge = new AllowanceCharge();
+
+                allowanceCharge.taxCategory.ID = invoiceData.AllowanceCharge.TaxCategory;
+                allowanceCharge.taxCategory.Percent = invoiceData.AllowanceCharge.TaxCategoryPercent;
+
+                allowanceCharge.Amount = invoiceData.AllowanceCharge.TaxCategory.Equals("S")
+                    ? 0
+                    : invoiceData.AllowanceCharge.Amount;
+
+                allowanceCharge.AllowanceChargeReason = invoiceData.AllowanceCharge.Reason;
+                inv.allowanceCharges.Add(allowanceCharge);
+            }
+
+            return inv;
+        }
+
         public static AccountingSupplierParty CreateSupplierParty(CompanyInfo companyInfo)
         {
             // Create an instance of the SupplierParty class
@@ -42,6 +123,7 @@ namespace ZATCA_V2.Utils
 
             return supplierParty;
         }
+
         public static AccountingSupplierParty CreateSupplierPartyFromCompany(Company companyInfo)
         {
             // Create an instance of the SupplierParty class
@@ -78,6 +160,25 @@ namespace ZATCA_V2.Utils
             };
 
             return supplierParty;
+        }
+
+        public static AccountingCustomerParty CreateCustomerPartyFromDto(CustomerInformation customerInformation)
+        {
+            return CreateCustomerParty(
+                customerInformation.CommercialRegistrationNumber!,
+                customerInformation.CommercialNumberType,
+                customerInformation.Address.StreetName,
+                customerInformation.Address.AdditionalStreetName,
+                customerInformation.Address.BuildingNumber,
+                "123",
+                customerInformation.Address.CityName,
+                customerInformation.Address.PostalZone,
+                customerInformation.Address.CountrySubentity,
+                customerInformation.Address.CitySubdivisionName,
+                customerInformation.Address.IdentificationCode,
+                customerInformation.RegistrationName,
+                customerInformation.TaxRegistrationNumber
+            );
         }
 
         public static AccountingCustomerParty CreateCustomerParty(
@@ -147,6 +248,7 @@ namespace ZATCA_V2.Utils
 
             return invline;
         }
+
         public static InvoiceLine CreateInvoiceLine(string itemName, decimal invoiceQuantity, decimal baseQuantity,
             decimal itemPrice, AllowanceChargeCollection allowanceCharges, string vatCategory,
             decimal vatPercentage, bool includingVat = false, string? taxExemptionReasonCode = "",
@@ -162,6 +264,9 @@ namespace ZATCA_V2.Utils
             invline.item.classifiedTaxCategory.Percent = vatPercentage; // نسبة الضريبة
             invline.allowanceCharges = allowanceCharges;
             invline.price.EncludingVat = includingVat;
+            if (includingVat)
+            {
+            }
 
             invline.taxTotal.TaxSubtotal.taxCategory.ID = vatCategory; //كود الضريبة
             invline.taxTotal.TaxSubtotal.taxCategory.Percent = vatPercentage; //نسبة الضريبة

@@ -1,7 +1,7 @@
 ﻿using ZATCA_V2.Models;
 using ZATCA_V2.Responses.Invoices;
-using ZatcaIntegrationSDK.HelperContracts;
 using ZatcaIntegrationSDK;
+using Invoice = ZatcaIntegrationSDK.Invoice;
 
 namespace ZATCA_V2.ZATCA
 {

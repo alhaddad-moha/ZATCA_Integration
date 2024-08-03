@@ -9,7 +9,7 @@ public class BulkInvoiceRequest
 {
     [Required] public int companyId { get; set; }
     [Required] public InvoiceType InvoicesType { get; set; }
-    [Required] public ICollection<InvoiceData>? Invoices { get; set; }
+    [Required] public ICollection<InvoiceData> Invoices { get; set; }
 }
 
 public class InvoiceData
@@ -35,15 +35,15 @@ public class InvoiceData
     public string LatestDeliveryDate { get; set; }
 
     [Required] public PaymentDetails PaymentDetails { get; set; }
-    [Required] public CustomerInformation? CustomerInformation { get; set; }
+    public CustomerInformation? CustomerInformation { get; set; }
 
-    [Required] public allowanceCharge AllowanceCharge { get; set; }
+    public AllowanceCharge? AllowanceCharge { get; set; }
 
     /*
     [Required] public LegalTotal LegalTotal { get; set; }
     */
 
-    [Required] public ICollection<InvoiceItem>? InvoiceItems { get; set; }
+    [Required] public ICollection<InvoiceItem> InvoiceItems { get; set; }
 }
 
 public class InvoiceItem
@@ -82,11 +82,9 @@ public class InvoiceType
         ErrorMessage = "Name must be '0100000' (standard invoice) or '0200000' (simplified invoice).")]
     public string Name { get; set; } = "0100000";
 
-    [Required]
     [StringLength(3, ErrorMessage = "DocumentCurrencyCode must be 3 characters long.")]
     public string DocumentCurrencyCode { get; set; } = "SAR";
 
-    [Required]
     [StringLength(3, ErrorMessage = "TaxCurrencyCode must be 3 characters long.")]
     public string TaxCurrencyCode { get; set; } = "SAR";
 }
@@ -103,18 +101,22 @@ public class PaymentDetails
 
 public class CustomerInformation
 {
-    [Required] public string? CommercialNumber { get; set; }
+    [Required(ErrorMessage = "CommercialRegistrationNumber is required.")]
+    public string CommercialRegistrationNumber { get; set; }
 
-    [Required] public string CommercialNumberType { get; set; } = "CRN";
+    public string CommercialNumberType { get; set; } = "CRN";
 
     public AddressDto Address { get; set; }
 
     [Required] public string RegistrationName { get; set; }
 
-    [Required] public string RegistrationNumber { get; set; }
+    [RegularExpression(@"^\d{15}$", ErrorMessage = "TaxRegistrationNumber must be a 15-digit number.")]
+    [Required(ErrorMessage = "TaxRegistrationNumber is required.")]
+
+    public string TaxRegistrationNumber { get; set; }
 }
 
-public class allowanceCharge
+public class AllowanceCharge
 {
     public decimal Amount { get; set; }
 

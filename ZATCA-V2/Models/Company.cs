@@ -33,6 +33,7 @@ namespace ZATCA_V2.Models
 
 
         public ICollection<CompanyCredentials>? CompanyCredentials { get; set; }
+        public ICollection<Invoice>? Invoices { get; set; }
         public CompanyInfo? CompanyInfo { get; set; }
         public ICollection<SignedInvoice> SignedInvoices { get; set; } = new List<SignedInvoice>();
     }

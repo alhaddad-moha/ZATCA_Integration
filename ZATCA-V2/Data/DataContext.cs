@@ -12,7 +12,8 @@ namespace ZATCA_V2.Data
         public DbSet<Company> Companies { get; set; }
         public DbSet<CompanyCredentials> CompanyCredentials { get; set; }
         public DbSet<CompanyInfo> CompanyInfos { get; set; }
-        public DbSet<SignedInvoice?> SignedInvoice { get; set; }
+        public DbSet<SignedInvoice> SignedInvoice { get; set; }
+        public DbSet<Invoice> Invoices { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -32,6 +33,11 @@ namespace ZATCA_V2.Data
                 .HasMany(c => c.SignedInvoices)
                 .WithOne(si => si.Company)
                 .HasForeignKey(si => si.CompanyId);
+            
+            modelBuilder.Entity<Company>()
+                .HasMany(c => c.Invoices)
+                .WithOne(i => i.Company)
+                .HasForeignKey(i => i.CompanyId);
 
         }
     }

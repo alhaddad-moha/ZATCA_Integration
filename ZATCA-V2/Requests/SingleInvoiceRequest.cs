@@ -10,6 +10,6 @@ public class SingleInvoiceRequest
     public InvoiceType InvoiceType { get; set; }
     [Required]
 
-    public InvoiceData? Invoice { get; set; }
+    public InvoiceData Invoice { get; set; }
 
 }

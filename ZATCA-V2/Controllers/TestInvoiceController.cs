@@ -9,6 +9,9 @@ using ZatcaIntegrationSDK;
 using ZatcaIntegrationSDK.APIHelper;
 using ZatcaIntegrationSDK.BLL;
 using ZatcaIntegrationSDK.HelperContracts;
+using AllowanceCharge = ZatcaIntegrationSDK.AllowanceCharge;
+using Invoice = ZatcaIntegrationSDK.Invoice;
+
 
 namespace ZATCA_V2.Controllers
 {
@@ -525,7 +528,7 @@ namespace ZATCA_V2.Controllers
             inv.SupplierParty = supplierParty;
 
             AccountingCustomerParty customerParty = InvoiceHelper.CreateCustomerParty(
-                invoiceData.CustomerInformation.CommercialNumber,
+                invoiceData.CustomerInformation.CommercialRegistrationNumber,
                 invoiceData.CustomerInformation.CommercialNumberType,
                 invoiceData.CustomerInformation.Address.StreetName,
                 invoiceData.CustomerInformation.Address.AdditionalStreetName,
@@ -537,7 +540,7 @@ namespace ZATCA_V2.Controllers
                 invoiceData.CustomerInformation.Address.CitySubdivisionName,
                 invoiceData.CustomerInformation.Address.IdentificationCode,
                 invoiceData.CustomerInformation.RegistrationName,
-                invoiceData.CustomerInformation.RegistrationNumber
+                invoiceData.CustomerInformation.TaxRegistrationNumber
             );
 
             inv.CustomerParty = customerParty;
@@ -667,7 +670,7 @@ namespace ZATCA_V2.Controllers
             inv.SupplierParty = supplierParty;
 
             AccountingCustomerParty customerParty = InvoiceHelper.CreateCustomerParty(
-                invoiceData.CustomerInformation.CommercialNumber,
+                invoiceData.CustomerInformation.CommercialRegistrationNumber,
                 invoiceData.CustomerInformation.CommercialNumberType,
                 invoiceData.CustomerInformation.Address.StreetName,
                 invoiceData.CustomerInformation.Address.AdditionalStreetName,
@@ -679,7 +682,7 @@ namespace ZATCA_V2.Controllers
                 invoiceData.CustomerInformation.Address.CitySubdivisionName,
                 invoiceData.CustomerInformation.Address.IdentificationCode,
                 invoiceData.CustomerInformation.RegistrationName,
-                invoiceData.CustomerInformation.RegistrationNumber
+                invoiceData.CustomerInformation.TaxRegistrationNumber
             );
 
             inv.CustomerParty = customerParty;

@@ -1,17 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ZATCA_V2.Data;
 using ZATCA_V2.DTOs;
 using ZATCA_V2.Helpers;
 using ZATCA_V2.Models;
-using ZATCA_V2.Repositories;
 using ZATCA_V2.Repositories.Interfaces;
 using ZATCA_V2.Responses;
 using ZATCA_V2.Utils;
-using ZATCA_V2.ZATCA;
 using ZatcaIntegrationSDK;
 using ZatcaIntegrationSDK.APIHelper;
 using ZatcaIntegrationSDK.HelperContracts;
+using Invoice = ZatcaIntegrationSDK.Invoice;
 
 namespace ZATCA_V2.Controllers
 {
@@ -19,29 +16,19 @@ namespace ZATCA_V2.Controllers
     [ApiController]
     public class ReleaseController : ControllerBase
     {
-        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ICompanyRepository _companyRepository;
         private readonly ICompanyCredentialsRepository _companyCredentialsRepository;
-        private readonly IExternalApiService _externalApiService;
-        private readonly ICompanyInfoRepository _companyInfoRepository;
-
-        private readonly DataContext _context;
         private Mode _mode = Constants.DefaultMode;
 
 
-        public ReleaseController(IHttpClientFactory httpClientFactory, ICompanyRepository companyRepository,
+        public ReleaseController(ICompanyRepository companyRepository,
             ICompanyCredentialsRepository companyCredentialsRepository
-            , IExternalApiService externalApiService, DataContext dataContext,
-            ICompanyInfoRepository companyInfoRepository)
+        )
 
         {
-            _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
             _companyRepository = companyRepository ?? throw new ArgumentNullException(nameof(companyRepository));
             _companyCredentialsRepository = companyCredentialsRepository ??
                                             throw new ArgumentNullException(nameof(companyCredentialsRepository));
-            _externalApiService = externalApiService ?? throw new ArgumentNullException(nameof(externalApiService));
-            _context = dataContext;
-            _companyInfoRepository = companyInfoRepository;
         }
 
         [HttpPost("register")]
@@ -60,12 +47,11 @@ namespace ZATCA_V2.Controllers
                     {
                         errors[nameof(companyReleaseRequest.TaxRegistrationNumber)] = new List<string>();
                     }
-
+                    
                     errors[nameof(companyReleaseRequest.TaxRegistrationNumber)]
                         .Add("Tax Registration Number already exists.");
                 }
-
-                // Check if the CommercialRegistrationNumber already exists
+                
                 var existingCompanyByCommercial =
                     await _companyRepository.FindByCommercialRegistrationNumber(companyReleaseRequest
                         .CommercialRegistrationNumber);
@@ -75,7 +61,7 @@ namespace ZATCA_V2.Controllers
                     {
                         errors[nameof(companyReleaseRequest.CommercialRegistrationNumber)] = new List<string>();
                     }
-
+                    
                     errors[nameof(companyReleaseRequest.CommercialRegistrationNumber)]
                         .Add("Commercial Registration Number already exists.");
                 }
@@ -85,32 +71,10 @@ namespace ZATCA_V2.Controllers
                     return new ApiResponse<object>(400, "Validation errors occurred.", null, errors);
                 }
 
-                var company = new Company
-                {
-                    CommonName = companyReleaseRequest.CommonName,
-                    CommercialRegistrationNumber = companyReleaseRequest.CommercialRegistrationNumber,
-                    TaxRegistrationNumber = companyReleaseRequest.TaxRegistrationNumber,
-                    OrganizationUnitName = companyReleaseRequest.OrganizationUnitName,
-                    OrganizationName = companyReleaseRequest.OrganizationName,
-                    InvoiceType = companyReleaseRequest.InvoiceType,
-                    EmailAddress = companyReleaseRequest.EmailAddress,
-                    BusinessIndustry = companyReleaseRequest.BusinessIndustry,
-                    CountryName = companyReleaseRequest.CountryName,
-                    StreetName = companyReleaseRequest.Address.StreetName,
-                    AdditionalStreetName = companyReleaseRequest.Address.AdditionalStreetName,
-                    CountrySubentity = companyReleaseRequest.Address.CountrySubentity,
-                    CityName = companyReleaseRequest.Address.CityName,
-                    CitySubdivisionName = companyReleaseRequest.Address.CitySubdivisionName,
-                    BuildingNumber = companyReleaseRequest.Address.BuildingNumber,
-                    PostalZone = companyReleaseRequest.Address.PostalZone,
-                    IdentificationCode = companyReleaseRequest.IdentificationCode,
-                    DeviceSerialNumber = companyReleaseRequest.DeviceSerialNumber,
-                    CompanyCredentials = new List<CompanyCredentials>() // Initialize the CompanyCredentials list
-                };
-
+                var company = GenerateCompanyData(companyReleaseRequest);
                 Invoice inv = GenerateInvoice(company);
 
-                CertificateRequest certrequest = GetCSRRequestData(companyReleaseRequest);
+                CertificateRequest certrequest = GetCsrRequestData(companyReleaseRequest);
 
 
                 CSIDGenerator generator = new CSIDGenerator(_mode);
@@ -161,7 +125,7 @@ namespace ZATCA_V2.Controllers
         }
 
         [HttpPost("generate-csid")]
-        public async Task<IActionResult> GenerateCSIDForExistingCompany(GenerateCsidDto request)
+        public async Task<IActionResult> GenerateCsidForExistingCompany(GenerateCsidDto request)
         {
             try
             {
@@ -175,20 +139,7 @@ namespace ZATCA_V2.Controllers
                 // Generate CSID for the existing company
                 Invoice inv = GenerateInvoice(existingCompany);
 
-                CertificateRequest certRequest = new CertificateRequest
-                {
-                    OTP = request.Otp,
-                    CommonName = existingCompany.CommonName,
-                    OrganizationName = existingCompany.OrganizationName,
-                    OrganizationUnitName = existingCompany.OrganizationUnitName,
-                    CountryName = existingCompany.CountryName,
-                    SerialNumber = existingCompany.DeviceSerialNumber,
-                    OrganizationIdentifier = existingCompany.TaxRegistrationNumber,
-                    Location =
-                        $"{existingCompany.CityName},{existingCompany.StreetName} {existingCompany.BuildingNumber}",
-                    BusinessCategory = existingCompany.BusinessIndustry,
-                    InvoiceType = existingCompany.InvoiceType
-                };
+                CertificateRequest certRequest = GenerateCertificateRequestData(existingCompany);
 
 
                 CSIDGenerator generator = new CSIDGenerator(_mode);
@@ -209,7 +160,7 @@ namespace ZATCA_V2.Controllers
                         CompanyId = existingCompany.Id
                     };
 
-                    existingCompany.CompanyCredentials.Add(companyCredentials);
+                    existingCompany.CompanyCredentials?.Add(companyCredentials);
 
                     await _companyCredentialsRepository.Create(companyCredentials);
                     await _companyRepository.Update(existingCompany);
@@ -237,6 +188,24 @@ namespace ZATCA_V2.Controllers
             {
                 return new ApiResponse<object>(500, $"An error occurred: {ex.Message}");
             }
+        }
+
+        private CertificateRequest GenerateCertificateRequestData(Company company, string otp = null)
+        {
+            return new CertificateRequest
+            {
+                OTP = otp,
+                CommonName = company.CommonName,
+                OrganizationName = company.OrganizationName,
+                OrganizationUnitName = company.OrganizationUnitName,
+                CountryName = company.CountryName,
+                SerialNumber = company.DeviceSerialNumber,
+                OrganizationIdentifier = company.TaxRegistrationNumber,
+                Location =
+                    $"{company.CityName},{company.StreetName} {company.BuildingNumber}",
+                BusinessCategory = company.BusinessIndustry,
+                InvoiceType = company.InvoiceType
+            };
         }
 
 
@@ -292,7 +261,7 @@ namespace ZATCA_V2.Controllers
             return inv;
         }
 
-        private CertificateRequest GetCSRRequestData(CompanyReleaseRequestDto companyReleaseRequest)
+        private CertificateRequest GetCsrRequestData(CompanyReleaseRequestDto companyReleaseRequest)
         {
             CertificateRequest certrequest = new CertificateRequest();
             //TODO get OTP 
@@ -309,6 +278,32 @@ namespace ZATCA_V2.Controllers
             certrequest.BusinessCategory = companyReleaseRequest.BusinessIndustry;
             certrequest.InvoiceType = companyReleaseRequest.InvoiceType;
             return certrequest;
+        }
+
+        private Company GenerateCompanyData(CompanyReleaseRequestDto companyReleaseRequest)
+        {
+            return new Company
+            {
+                CommonName = companyReleaseRequest.CommonName,
+                CommercialRegistrationNumber = companyReleaseRequest.CommercialRegistrationNumber,
+                TaxRegistrationNumber = companyReleaseRequest.TaxRegistrationNumber,
+                OrganizationUnitName = companyReleaseRequest.OrganizationUnitName,
+                OrganizationName = companyReleaseRequest.OrganizationName,
+                InvoiceType = companyReleaseRequest.InvoiceType,
+                EmailAddress = companyReleaseRequest.EmailAddress,
+                BusinessIndustry = companyReleaseRequest.BusinessIndustry,
+                CountryName = companyReleaseRequest.CountryName,
+                StreetName = companyReleaseRequest.Address.StreetName,
+                AdditionalStreetName = companyReleaseRequest.Address.AdditionalStreetName,
+                CountrySubentity = companyReleaseRequest.Address.CountrySubentity,
+                CityName = companyReleaseRequest.Address.CityName,
+                CitySubdivisionName = companyReleaseRequest.Address.CitySubdivisionName,
+                BuildingNumber = companyReleaseRequest.Address.BuildingNumber,
+                PostalZone = companyReleaseRequest.Address.PostalZone,
+                IdentificationCode = companyReleaseRequest.IdentificationCode,
+                DeviceSerialNumber = companyReleaseRequest.DeviceSerialNumber,
+                CompanyCredentials = new List<CompanyCredentials>() // Initialize the CompanyCredentials list
+            };
         }
     }
 }

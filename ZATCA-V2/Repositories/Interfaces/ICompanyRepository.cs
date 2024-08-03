@@ -2,16 +2,9 @@
 
 namespace ZATCA_V2.Repositories.Interfaces
 {
-    public interface ICompanyRepository
+    public interface ICompanyRepository : IBaseRepository<Company>
     {
-        Task<List<Company>> GetAll();
-        Task<Company?> GetById(int id);
         Task<Company?> FindByTaxRegistrationNumber(string taxRegistrationNumber);
         Task<Company?> FindByCommercialRegistrationNumber(string commercialRegistrationNumber);
-
-        Task Create(Company company);
-        Task Update(Company company);
-        Task Delete(int id);
-        
     }
 }
