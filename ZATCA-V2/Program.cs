@@ -1,10 +1,8 @@
 using System.Text.Json.Serialization;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using ZATCA_V2.Data;
 using ZATCA_V2.Repositories;
-using ZATCA_V2.Middlewares;
 using ZATCA_V2.Repositories.Interfaces;
 using ZATCA_V2.ZATCA;
 using ZATCA_V2.Helpers;
@@ -15,7 +13,6 @@ using ZATCA_V2.CustomValidators;
 using ZATCA_V2.Mappers;
 using ZATCA_V2.Requests;
 using SlackLogger;
-using ZatcaIntegrationSDK.BLL;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,7 +28,7 @@ builder.Logging.AddSlack(options =>
 {
     options.WebhookUrl = "https://hooks.slack.com/services/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";
     options.LogLevel = LogLevel.Error;
-    options.NotificationLevel = LogLevel.None;
+    options.NotificationLevel = LogLevel.Warning;
     options.ApplicationName = "ZATCA";
 });
 builder.Services.AddDbContext<DataContext>(options =>
@@ -133,6 +130,7 @@ builder.Services.AddHealthChecksUI(opt =>
 
 var app = builder.Build();
 
+app.UseHttpLogging();
 app.MapHealthChecks("/health", new HealthCheckOptions
 {
     Predicate = _ => true,
