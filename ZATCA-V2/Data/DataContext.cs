@@ -14,6 +14,7 @@ namespace ZATCA_V2.Data
         public DbSet<CompanyInfo> CompanyInfos { get; set; }
         public DbSet<SignedInvoice> SignedInvoice { get; set; }
         public DbSet<Invoice> Invoices { get; set; }
+        public DbSet<ApiKey> ApiKeys { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

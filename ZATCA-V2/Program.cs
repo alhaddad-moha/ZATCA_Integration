@@ -93,6 +93,8 @@ builder.Services.AddDbContext<DataContext>(options =>
     Log.Information("Final connection string used by DbContext: {ConnectionString}", loggedConnectionString);
 });
 
+
+builder.Services.AddScoped<IApiKeyRepository, ApiKeyRepository>();
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<ICompanyCredentialsRepository, CompanyCredentialsRepository>();
@@ -122,6 +124,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(CompanyProfile));
 
 // Add health checks
+/*
 builder.Services.AddHealthChecks()
     .AddCheck("zatca_health_check", new ZatcaHealthCheck())
     .AddCheck<SqlHealthCheck>("sql_health_check", HealthStatus.Unhealthy);
@@ -134,13 +137,14 @@ builder.Services.AddHealthChecksUI(opt =>
         opt.AddHealthCheckEndpoint("Basic Health Check", "/health"); // Map health check endpoint
     })
     .AddInMemoryStorage();
+    */
 
 var app = builder.Build();
 
 //app.UseMiddleware<ApiKeyMiddleware>();
 
 app.UseHttpLogging();
-app.MapHealthChecks("/health", new HealthCheckOptions
+/*app.MapHealthChecks("/health", new HealthCheckOptions
 {
     Predicate = _ => true,
     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
@@ -150,7 +154,7 @@ app.MapHealthChecksUI(setup =>
 {
     setup.UIPath = "/health-ui"; // URL for the health check UI
     setup.ApiPath = "/health-ui-api"; // API for the health check UI
-});
+});*/
 
 Log.Information("Running in {Environment} environment", app.Environment.EnvironmentName);
 
