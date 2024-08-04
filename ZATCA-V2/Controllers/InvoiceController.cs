@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using ZATCA_V2.Exceptions;
 using ZATCA_V2.Helpers;
+using ZATCA_V2.Middlewares;
 using ZATCA_V2.Models;
 using ZATCA_V2.Repositories.Interfaces;
 using ZATCA_V2.Requests;
@@ -15,6 +16,7 @@ using DBInvoiceModel = ZATCA_V2.Models.Invoice;
 
 namespace ZATCA_V2.Controllers
 {
+    [ServiceFilter(typeof(ApiKeyFilter))]
     [Route("api/[controller]")]
     [ApiController]
     public class InvoiceController : ControllerBase

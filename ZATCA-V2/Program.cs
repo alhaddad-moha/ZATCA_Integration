@@ -32,6 +32,8 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.WriteIndented = true;
 });
 
+builder.Services.AddScoped<ApiKeyFilter>(); // Register the filter
+
 // Add Slack logging provider
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();

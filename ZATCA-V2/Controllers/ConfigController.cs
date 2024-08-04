@@ -6,6 +6,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using ZATCA_V2.Data;
 using ZATCA_V2.Helpers;
+using ZATCA_V2.Middlewares;
 using ZATCA_V2.Models;
 using ZATCA_V2.Repositories;
 using ZATCA_V2.Repositories.Interfaces;
@@ -16,6 +17,7 @@ using ZatcaIntegrationSDK.HelperContracts;
 
 namespace ZATCA_V2.Controllers
 {
+    [ServiceFilter(typeof(ApiKeyFilter))]
     [Route("api/[controller]")]
     [ApiController]
     public class ConfigController : ControllerBase

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ZATCA_V2.DTOs;
 using ZATCA_V2.Helpers;
+using ZATCA_V2.Middlewares;
 using ZATCA_V2.Models;
 using ZATCA_V2.Repositories.Interfaces;
 using ZATCA_V2.Responses;
@@ -12,6 +13,7 @@ using Invoice = ZatcaIntegrationSDK.Invoice;
 
 namespace ZATCA_V2.Controllers
 {
+    [ServiceFilter(typeof(ApiKeyFilter))]
     [Route("api/[controller]")]
     [ApiController]
     public class ReleaseController : ControllerBase

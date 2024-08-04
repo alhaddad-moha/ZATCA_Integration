@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
 using ZATCA_V2.DTOs;
+using ZATCA_V2.Middlewares;
 using ZATCA_V2.Models;
 using ZATCA_V2.Repositories.Interfaces;
 using ZATCA_V2.Responses;
 
 namespace ZATCA_V2.Controllers
 {
+    [ServiceFilter(typeof(ApiKeyFilter))]
     [ApiController]
     [Route("api/companies")]
     public class CompanyController : ControllerBase
