@@ -32,5 +32,36 @@ namespace ZATCA_V2.Repositories
                 .OrderByDescending(cc => cc.CreatedAt)
                 .ToListAsync();
         }
+
+
+        public async Task<Invoice?> GetBySystemInvoiceId(string invoiceId, int companyId)
+        {
+            return await _context.Invoices.FirstOrDefaultAsync(i =>
+                i.SystemInvoiceId == invoiceId && i.CompanyId == companyId);
+        }
+
+        public async Task CreateOrUpdate(Invoice invoice)
+        {
+            var existingInvoice = await GetBySystemInvoiceId(invoice.SystemInvoiceId, invoice.CompanyId);
+            if (existingInvoice != null)
+            {
+                _context.Entry(existingInvoice).State = EntityState.Detached;
+                invoice.Id = existingInvoice.Id;
+                _context.Invoices.Update(invoice);
+            }
+            else
+            {
+                // Create new invoice
+                await _context.Invoices.AddAsync(invoice);
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> IsInvoiceSigned(string invoiceId, int companyId)
+        {
+            return await _context.Invoices
+                .AnyAsync(i => i.SystemInvoiceId == invoiceId && i.CompanyId == companyId && i.IsSigned);
+        }
     }
 }

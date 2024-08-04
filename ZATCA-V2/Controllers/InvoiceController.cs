@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using ZATCA_V2.Exceptions;
 using ZATCA_V2.Helpers;
 using ZATCA_V2.Models;
@@ -70,6 +71,14 @@ namespace ZATCA_V2.Controllers
                     return new ApiResponse<object>(400, "Validation errors occurred.", null, errors);
                 }
 
+                var isInvoiceSigned = await _invoiceRepository.IsInvoiceSigned(singleInvoiceRequest.Invoice.Id,
+                    singleInvoiceRequest.CompanyId);
+
+                if (isInvoiceSigned)
+                {
+                    return new ApiResponse<object>(400, "Invoice already signed.");
+                }
+
                 var latestInvoice = await _invoiceRepository.GetLatestByCompanyId(singleInvoiceRequest.CompanyId);
                 UBLXML ubl = new UBLXML();
 
@@ -102,12 +111,13 @@ namespace ZATCA_V2.Controllers
                     invoice.StatusCode = 400;
                     invoice.ErrorMessage = res.ErrorMessage;
                     invoice.WarningMessage = res.WarningMessage;
-                    await _invoiceRepository.Create(invoice);
+                    await _invoiceRepository.CreateOrUpdate(invoice);
                     return BadRequest(res);
                 }
 
                 var invoiceResponse = await _zatcaService.SendInvoiceToZATCA(companyCredentials, res, inv);
-                invoice.ZatcaResponse = invoiceResponse.ToString();
+                invoice.ZatcaResponse = JsonConvert.SerializeObject(invoiceResponse); // Serialize the response to JSON
+
                 invoice.StatusCode = invoiceResponse.StatusCode;
 
                 if (invoiceResponse.IsSuccess)
@@ -140,7 +150,7 @@ namespace ZATCA_V2.Controllers
                 }
 
 
-                await _invoiceRepository.Create(invoice);
+                await _invoiceRepository.CreateOrUpdate(invoice);
 
                 var response = new
                 {
