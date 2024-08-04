@@ -8,8 +8,8 @@ using ZATCA_V2.Responses;
 using ZATCA_V2.Utils;
 using ZATCA_V2.ZATCA;
 using ZatcaIntegrationSDK;
-using AllowanceCharge = ZatcaIntegrationSDK.AllowanceCharge;
 using Invoice = ZatcaIntegrationSDK.Invoice;
+using DBInvoiceModel = ZATCA_V2.Models.Invoice;
 
 
 namespace ZATCA_V2.Controllers
@@ -20,16 +20,19 @@ namespace ZATCA_V2.Controllers
     {
         private readonly ICompanyCredentialsRepository _companyCredentialsRepository;
         private readonly ISignedInvoiceRepository _signedInvoiceRepository;
+        private readonly IInvoiceRepository _invoiceRepository;
         private readonly ICompanyRepository _companyRepository;
         private readonly IZatcaService _zatcaService;
 
 
         public InvoiceController(ICompanyCredentialsRepository companyCredentialsRepository,
             ISignedInvoiceRepository signedInvoiceRepository,
-            ICompanyRepository companyRepository,IZatcaService zatcaService)
+            ICompanyRepository companyRepository, IZatcaService zatcaService,
+            IInvoiceRepository invoiceRepository)
         {
             _companyRepository = companyRepository;
             _zatcaService = zatcaService;
+            _invoiceRepository = invoiceRepository;
             _companyCredentialsRepository = companyCredentialsRepository;
             _signedInvoiceRepository = signedInvoiceRepository;
         }
@@ -52,24 +55,14 @@ namespace ZATCA_V2.Controllers
                 var company = await _companyRepository.GetById(singleInvoiceRequest.CompanyId);
                 if (company == null)
                 {
-                    if (!errors.ContainsKey(nameof(singleInvoiceRequest.CompanyId)))
-                    {
-                        errors[nameof(singleInvoiceRequest.CompanyId)] = new List<string>();
-                    }
-
-                    errors[nameof(singleInvoiceRequest.CompanyId)].Add("Company Not Found");
+                    errors[nameof(singleInvoiceRequest.CompanyId)] = new List<string> { "Company Not Found" };
                 }
 
                 var companyCredentials =
                     await _companyCredentialsRepository.GetLatestByCompanyId(singleInvoiceRequest.CompanyId);
                 if (companyCredentials == null)
                 {
-                    if (!errors.ContainsKey("Credentials"))
-                    {
-                        errors["Credentials"] = new List<string>();
-                    }
-
-                    errors["Credentials"].Add("Company Credentials Not Found");
+                    errors["Credentials"] = new List<string> { "Company Credentials Not Found" };
                 }
 
                 if (errors.Any())
@@ -77,22 +70,22 @@ namespace ZATCA_V2.Controllers
                     return new ApiResponse<object>(400, "Validation errors occurred.", null, errors);
                 }
 
-                var latestInvoice = await _signedInvoiceRepository.GetLatestByCompanyId(singleInvoiceRequest.CompanyId);
+                var latestInvoice = await _invoiceRepository.GetLatestByCompanyId(singleInvoiceRequest.CompanyId);
                 UBLXML ubl = new UBLXML();
 
-                Invoice inv = InvoiceHelper.CreateMainInvoice(singleInvoiceRequest.InvoiceType, singleInvoiceRequest.Invoice,
-                    company!);
-
-                string invoiceHash = latestInvoice == null ? Constants.DefaultInvoiceHash : latestInvoice.InvoiceHash;
+                Invoice inv = InvoiceHelper.CreateMainInvoice(singleInvoiceRequest.InvoiceType,
+                    singleInvoiceRequest.Invoice, company!);
+                string invoiceHash = latestInvoice == null ? Constants.DefaultInvoiceHash : latestInvoice.Hash;
 
                 foreach (var invoiceItem in singleInvoiceRequest.Invoice.InvoiceItems)
                 {
-                    InvoiceLine invoiceLine = InvoiceHelper.CreateInvoiceLine(
-                        invoiceItem.Name, invoiceItem.Quantity, invoiceItem.BaseQuantity,
-                        invoiceItem.Price, inv.allowanceCharges, invoiceItem.TaxCategory,
-                        invoiceItem.VatPercentage, invoiceItem.IsIncludingVat, invoiceItem.TaxExemptionReasonCode,
-                        invoiceItem.TaxExemptionReason);
-
+                    var invoiceLine = InvoiceHelper.CreateInvoiceLine(
+                        invoiceItem.Name, invoiceItem.Quantity, invoiceItem.BaseQuantity, invoiceItem.Price,
+                        inv.allowanceCharges,
+                        invoiceItem.TaxCategory, invoiceItem.VatPercentage, invoiceItem.IsIncludingVat,
+                        invoiceItem.TaxExemptionReasonCode,
+                        invoiceItem.TaxExemptionReason
+                    );
                     inv.InvoiceLines.Add(invoiceLine);
                 }
 
@@ -101,25 +94,53 @@ namespace ZATCA_V2.Controllers
                 inv.AdditionalDocumentReferencePIH.EmbeddedDocumentBinaryObject = invoiceHash;
 
                 Result res = ubl.GenerateInvoiceXML(inv, Directory.GetCurrentDirectory());
+                DBInvoiceModel invoice = CreateInvoiceFromResult(res, company!, singleInvoiceRequest.Invoice.Id,
+                    singleInvoiceRequest.InvoiceType.Name);
+
                 if (!res.IsValid)
                 {
+                    invoice.StatusCode = 400;
+                    invoice.ErrorMessage = res.ErrorMessage;
+                    invoice.WarningMessage = res.WarningMessage;
+                    await _invoiceRepository.Create(invoice);
                     return BadRequest(res);
                 }
 
-                SignedInvoice signedInvoice = CreateSignedInvoice(res, company!, singleInvoiceRequest.InvoiceType.Name);
-
                 var invoiceResponse = await _zatcaService.SendInvoiceToZATCA(companyCredentials, res, inv);
+                invoice.ZatcaResponse = invoiceResponse.ToString();
+                invoice.StatusCode = invoiceResponse.StatusCode;
 
-                if (invoiceResponse.StatusCode == 202)
+                if (invoiceResponse.IsSuccess)
                 {
-                    if (!string.IsNullOrEmpty(invoiceResponse.ErrorMessage))
+                    invoice.IsSigned = true;
+
+                    if (invoiceResponse.StatusCode == 202)
                     {
-                        return BadRequest(invoiceResponse.ErrorMessage);
+                        invoice.WarningMessage = invoiceResponse.WarningMessage;
                     }
+                }
+                else
+                {
+                    if (invoiceResponse.StatusCode is 400 or 401)
+                    {
+                        invoice.StatusCode = invoiceResponse.StatusCode;
+                        invoice.WarningMessage = invoiceResponse.WarningMessage;
+                    }
+                    else if (invoiceResponse.StatusCode == 500)
+                    {
+                        invoice.StatusCode = 500;
+                        invoice.ErrorMessage = "Internal server error occurred." + invoiceResponse.ErrorMessage;
+                    }
+                    else
+                    {
+                        invoice.StatusCode = 500;
+                    }
+
+                    invoice.ErrorMessage = invoiceResponse.ErrorMessage;
                 }
 
 
-                await _signedInvoiceRepository.Create(signedInvoice);
+                await _invoiceRepository.Create(invoice);
 
                 var response = new
                 {
@@ -175,16 +196,17 @@ namespace ZATCA_V2.Controllers
                     return new ApiResponse<object>(400, "Validation errors occurred.", null, errors);
                 }
 
-                var latestInvoice = await _signedInvoiceRepository.GetLatestByCompanyId(bulkInvoiceRequest.companyId);
-                string invoiceHash = latestInvoice == null ? Constants.DefaultInvoiceHash : latestInvoice.InvoiceHash;
+                var latestInvoice = await _invoiceRepository.GetLatestByCompanyId(bulkInvoiceRequest.companyId);
+                string invoiceHash = latestInvoice == null ? Constants.DefaultInvoiceHash : latestInvoice.Hash;
 
                 UBLXML ubl = new UBLXML();
 
                 List<object> responses = new List<object>();
                 foreach (var invoiceData in bulkInvoiceRequest.Invoices)
                 {
-                    Invoice inv = InvoiceHelper.CreateMainInvoice(bulkInvoiceRequest.InvoicesType, invoiceData, company!);
-                    
+                    Invoice inv =
+                        InvoiceHelper.CreateMainInvoice(bulkInvoiceRequest.InvoicesType, invoiceData, company!);
+
                     foreach (var invoiceItem in invoiceData.InvoiceItems)
                     {
                         InvoiceLine invoiceLine = InvoiceHelper.CreateInvoiceLine(
@@ -201,41 +223,57 @@ namespace ZATCA_V2.Controllers
                     inv.AdditionalDocumentReferencePIH.EmbeddedDocumentBinaryObject = invoiceHash;
 
                     Result res = ubl.GenerateInvoiceXML(inv, Directory.GetCurrentDirectory());
-                    if (res.IsValid)
+
+                    DBInvoiceModel invoice = CreateInvoiceFromResult(res, company!, invoiceData.Id,
+                        bulkInvoiceRequest.InvoicesType.Name);
+
+                    if (!res.IsValid)
                     {
-                        // return Ok(res.InvoiceHash);
-                        // return Ok(res.SingedXML);
-                        // return Ok(res.EncodedInvoice);
-                        // return Ok(res.UUID);
-                        // return Ok(res.QRCode);
-                        // return Ok(res.PIH);
-                        // return Ok(res.SingedXMLFileName);
-                    }
-                    else
-                    {
+                        invoice.StatusCode = 400;
+                        invoice.ErrorMessage = res.ErrorMessage;
+                        invoice.WarningMessage = res.WarningMessage;
+                        await _invoiceRepository.Create(invoice);
                         return BadRequest(res);
                     }
 
-                    SignedInvoice signedInvoice =
-                        CreateSignedInvoice(res, company!, bulkInvoiceRequest.InvoicesType.Name);
-
-
                     var invoiceResponse = await _zatcaService.SendInvoiceToZATCA(companyCredentials, res, inv);
+                    invoice.ZatcaResponse = invoiceResponse.ToString();
+                    invoice.StatusCode = invoiceResponse.StatusCode;
 
-                    if (string.IsNullOrEmpty(invoiceResponse.ErrorMessage))
+                    if (invoiceResponse.IsSuccess)
                     {
-                        await _signedInvoiceRepository.Create(signedInvoice);
+                        invoice.IsSigned = true;
 
-                        responses.Add(new
+                        if (invoiceResponse.StatusCode == 202)
                         {
-                            ZATCA = invoiceResponse,
-                            Res = ExtractInvoiceDetails(res)
-                        });
+                            invoice.WarningMessage = invoiceResponse.WarningMessage;
+                        }
+                        else
+                        {
+                            invoice.StatusCode = 200;
+                        }
                     }
                     else
                     {
-                        responses.Add(invoiceResponse);
+                        if (invoiceResponse.StatusCode == 400 || invoiceResponse.StatusCode == 401)
+                        {
+                            invoice.WarningMessage = invoiceResponse.WarningMessage;
+                            invoice.ErrorMessage = invoiceResponse.ErrorMessage;
+                        }
+                        else if (invoiceResponse.StatusCode == 500)
+                        {
+                            invoice.ErrorMessage = "Internal server error occurred." + invoiceResponse.ErrorMessage;
+                        }
                     }
+
+
+                    await _invoiceRepository.Create(invoice);
+
+                    responses.Add(new
+                    {
+                        ZATCA = invoiceResponse,
+                        Res = ExtractInvoiceDetails(res)
+                    });
                 }
 
                 return Ok(responses);
@@ -251,7 +289,7 @@ namespace ZATCA_V2.Controllers
             }
         }
 
-        
+
         private object ExtractInvoiceDetails(Result res)
         {
             return new
@@ -273,35 +311,28 @@ namespace ZATCA_V2.Controllers
         }
 
 
-        private SignedInvoice CreateSignedInvoice(Result res, Company company, string invoiceType = "0100000")
+        private DBInvoiceModel CreateInvoiceFromResult(Result res, Company company, string systemInvoiceId,
+            string invoiceType = "0100000")
         {
-            string invoiceTypeName;
+            string invoiceTypeName = invoiceType switch
+            {
+                "0100000" => "Standard",
+                "0200000" => "Simplified",
+                _ => "Unknown"
+            };
 
-            if (invoiceType == "0100000")
-            {
-                invoiceTypeName = "Standard";
-            }
-            else if (invoiceType == "0200000")
-            {
-                invoiceTypeName = "Simplified";
-            }
-            else
-            {
-                invoiceTypeName = "Unknown"; // Handle any other cases if needed
-            }
-
-            return new SignedInvoice
+            return new DBInvoiceModel
             {
                 UUID = res.UUID,
-                InvoiceHash = res.InvoiceHash,
-                InvoiceType = invoiceTypeName,
-                Amount = Convert.ToDecimal(res.TaxExclusiveAmount),
-                Tax = Convert.ToDecimal(res.TaxAmount),
-                SingedXML = res.SingedXML,
+                Hash = res.InvoiceHash,
+                SystemInvoiceId = systemInvoiceId,
                 EncodedInvoice = res.EncodedInvoice,
                 QRCode = res.QRCode,
-                SingedXMLFileName = res.SingedXMLFileName,
+                IsSigned = false,
+                StatusCode = 0,
                 CompanyId = company.Id,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
         }
     }
