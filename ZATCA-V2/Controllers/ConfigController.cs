@@ -17,12 +17,10 @@ using ZatcaIntegrationSDK.HelperContracts;
 
 namespace ZATCA_V2.Controllers
 {
-    [ServiceFilter(typeof(ApiKeyFilter))]
     [Route("api/[controller]")]
     [ApiController]
     public class ConfigController : ControllerBase
     {
-        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ICompanyRepository _companyRepository;
         private readonly ICompanyCredentialsRepository _companyCredentialsRepository;
         private readonly IExternalApiService _externalApiService;
@@ -34,7 +32,6 @@ namespace ZATCA_V2.Controllers
             , IExternalApiService externalApiService, DataContext dataContext)
 
         {
-            _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
             _companyRepository = companyRepository ?? throw new ArgumentNullException(nameof(companyRepository));
             _companyCredentialsRepository = companyCredentialsRepository ??
                                             throw new ArgumentNullException(nameof(companyCredentialsRepository));
@@ -85,6 +82,7 @@ namespace ZATCA_V2.Controllers
             return Ok(healthStatus);
         }
 
+        [ServiceFilter(typeof(ApiKeyFilter))]
 
         [HttpPost("generateCSR/{companyId}")]
         public async Task<IActionResult> GenerateCsr(int companyId)
@@ -114,6 +112,7 @@ namespace ZATCA_V2.Controllers
                 return StatusCode(500, new { message = ex.Message, status = 500 });
             }
         }
+        [ServiceFilter(typeof(ApiKeyFilter))]
 
         [HttpPost("generateKeys/{companyId}")]
         public async Task<IActionResult> GenerateKeys(int companyId,
@@ -180,6 +179,7 @@ namespace ZATCA_V2.Controllers
                 return StatusCode(500, new { message = $"Internal Server Error: {ex.Message}", status = 500 });
             }
         }
+        [ServiceFilter(typeof(ApiKeyFilter))]
 
         [HttpPost("generateCSID/{companyId}")]
         public async Task<IActionResult> GenerateCSID(int companyId)
@@ -240,6 +240,7 @@ namespace ZATCA_V2.Controllers
                 });
             }
         }
+        [ServiceFilter(typeof(ApiKeyFilter))]
 
         [HttpPost("generateCSIDTest/{companyId}")]
         public async Task<IActionResult> GenerateCSIDTest(int companyId)
