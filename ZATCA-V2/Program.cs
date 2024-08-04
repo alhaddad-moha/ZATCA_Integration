@@ -135,7 +135,7 @@ builder.Services.AddHealthChecksUI(opt =>
 
 var app = builder.Build();
 
-app.UseMiddleware<ApiKeyMiddleware>();
+//app.UseMiddleware<ApiKeyMiddleware>();
 
 app.UseHttpLogging();
 app.MapHealthChecks("/health", new HealthCheckOptions
