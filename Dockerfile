@@ -5,8 +5,8 @@ WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-# Install OpenJDK
-RUN apt-get update && apt-get install -y openjdk-11-jdk
+# Install OpenJDK 17
+RUN apt-get update && apt-get install -y openjdk-17-jdk
 
 # Use the official Microsoft .NET SDK image to build the project
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
@@ -30,7 +30,7 @@ RUN dotnet build "ZATCA-V2.csproj" -c Release -o /app/build --verbosity detailed
 # Publish the application
 FROM build AS publish
 RUN echo "Publishing the application..."
-RUN dotnet publish "ZATCA-V2.csproj" -c Release -o /app/publish --verbosity detailed
+RUN dotnet publish "ZATCA-V2.csproj" -c Release -o /app/publish
 
 # Final stage/image
 FROM base AS final
