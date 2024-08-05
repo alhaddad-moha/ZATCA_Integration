@@ -26,5 +26,5 @@ public class Constants
     public const string X509SerialNumber =
         "2475382886904809774818644480820936050208702411";
 
-    public const Mode DefaultMode = Mode.Simulation;
+    public const Mode DefaultMode = Mode.developer;
 }
