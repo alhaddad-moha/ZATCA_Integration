@@ -13,16 +13,16 @@ WORKDIR /src
 
 # Copy csproj and restore as distinct layers
 COPY ["ZATCA-V2/ZATCA-V2.csproj", "ZATCA-V2/"]
-RUN dotnet restore "ZATCA-V2/ZATCA-V2.csproj"
+RUN dotnet restore "ZATCA-V2/ZATCA-V2.csproj" --verbosity detailed
 
 # Copy everything else and build
 COPY . .
 WORKDIR "/src/ZATCA-V2"
-RUN dotnet build "ZATCA-V2.csproj" -c Release -o /app/build --verbosity detailed
+RUN dotnet build "ZATCA-V2.csproj" -c Release -o /app/build
 
 # Publish the application
 FROM build AS publish
-RUN dotnet publish "ZATCA-V2.csproj" -c Release -o /app/publish 
+RUN dotnet publish "ZATCA-V2.csproj" -c Release -o /app/publish
 
 # Final stage/image
 FROM base AS final
@@ -31,8 +31,8 @@ WORKDIR /app
 # Copy published files
 COPY --from=publish /app/publish .
 
-# Copy JAR files to the Docker image
-COPY libs /app/libs
+# Copy the libs folder to the Docker image
+COPY ZATCA-V2/libs /app/libs
 
 # Set the IKVM classpath environment variable
 ENV IKVM_CLASSPATH /app/libs/*.jar
