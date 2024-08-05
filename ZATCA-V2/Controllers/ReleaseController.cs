@@ -49,11 +49,11 @@ namespace ZATCA_V2.Controllers
                     {
                         errors[nameof(companyReleaseRequest.TaxRegistrationNumber)] = new List<string>();
                     }
-                    
+
                     errors[nameof(companyReleaseRequest.TaxRegistrationNumber)]
                         .Add("Tax Registration Number already exists.");
                 }
-                
+
                 var existingCompanyByCommercial =
                     await _companyRepository.FindByCommercialRegistrationNumber(companyReleaseRequest
                         .CommercialRegistrationNumber);
@@ -63,7 +63,7 @@ namespace ZATCA_V2.Controllers
                     {
                         errors[nameof(companyReleaseRequest.CommercialRegistrationNumber)] = new List<string>();
                     }
-                    
+
                     errors[nameof(companyReleaseRequest.CommercialRegistrationNumber)]
                         .Add("Commercial Registration Number already exists.");
                 }
@@ -117,7 +117,8 @@ namespace ZATCA_V2.Controllers
                 }
                 else
                 {
-                    return new ApiResponse<object>(400, $"An error occurred: {response.ErrorMessage}");
+                    return new ApiResponse<object>(500,
+                        $"An error occurred during CSID generation: {response.ErrorMessage}", response);
                 }
             }
             catch (Exception ex)
