@@ -1,5 +1,4 @@
 # Use the official Microsoft ASP.NET Core runtime image
-# This image includes the .NET runtime and ASP.NET Core
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
 EXPOSE 80
@@ -12,30 +11,30 @@ RUN apt-get update && apt-get install -y openjdk-17-jdk
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 
-# Log the start of the build process
-RUN echo "Starting build process..."
-
 # Copy csproj and restore as distinct layers
 COPY ["ZATCA-V2/ZATCA-V2.csproj", "ZATCA-V2/"]
-RUN echo "Copied csproj file."
-RUN dotnet restore "ZATCA-V2/ZATCA-V2.csproj" --verbosity detailed
+RUN dotnet restore "ZATCA-V2/ZATCA-V2.csproj"
 
 # Copy everything else and build
 COPY . .
-RUN echo "Copied all project files."
 WORKDIR "/src/ZATCA-V2"
-RUN echo "Building the project..."
 RUN dotnet build "ZATCA-V2.csproj" -c Release -o /app/build --verbosity detailed
 
 # Publish the application
 FROM build AS publish
-RUN echo "Publishing the application..."
-RUN dotnet publish "ZATCA-V2.csproj" -c Release -o /app/publish
+RUN dotnet publish "ZATCA-V2.csproj" -c Release -o /app/publish 
 
 # Final stage/image
 FROM base AS final
 WORKDIR /app
-RUN echo "Copying published files..."
+
+# Copy published files
 COPY --from=publish /app/publish .
-RUN echo "Starting the application..."
+
+# Copy JAR files to the Docker image
+COPY libs /app/libs
+
+# Set the IKVM classpath environment variable
+ENV IKVM_CLASSPATH /app/libs/*.jar
+
 ENTRYPOINT ["dotnet", "ZATCA-V2.dll"]
