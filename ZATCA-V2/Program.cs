@@ -61,50 +61,10 @@ builder.Logging.AddSlack(options =>
 
 builder.Services.AddDbContext<DataContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    Log.Information("Default connection string from appsettings: {ConnectionString}", connectionString);
-
-    if (!builder.Environment.IsDevelopment())
-    {
-        Log.Information("Running in a non-Development environment");
-
-        var server = Environment.GetEnvironmentVariable("DB_SERVER");
-        var database = Environment.GetEnvironmentVariable("DB_NAME");
-        var user = Environment.GetEnvironmentVariable("DB_USER");
-        var password = Environment.GetEnvironmentVariable("DB_PASSWORD");
-        var trustedConnection = Environment.GetEnvironmentVariable("TRUSTED_CONNECTION") ?? "True";
-
-        Log.Information(
-            "Environment variables - DB_SERVER: {Server}, DB_NAME: {Database}, DB_USER: {User}, DB_PASSWORD: {Password}, TRUSTED_CONNECTION: {TrustedConnection}",
-            server ?? "null", database ?? "null", user ?? "null", password ?? "null", trustedConnection);
-
-        if (!string.IsNullOrEmpty(server) &&
-            !string.IsNullOrEmpty(database) &&
-            !string.IsNullOrEmpty(user) &&
-            !string.IsNullOrEmpty(password))
-        {
-            connectionString =
-                $"Server={server};Database={database};User Id={user};Password={password};Trusted_Connection={trustedConnection};";
-            Log.Information("Using environment variables for connection string: {ConnectionString}", connectionString);
-        }
-        else
-        {
-            Log.Warning(
-                "One or more environment variables for the database connection string are missing. Using default connection string.");
-        }
-    }
-    else
-    {
-        Log.Information("Using default connection string from appsettings.");
-    }
-
-    options.UseSqlServer(connectionString);
-
-    // Log the final connection string (excluding password for security)
-    var loggedConnectionString = connectionString.Replace("password", "*****");
-    Log.Information("Final connection string used by DbContext: {ConnectionString}", loggedConnectionString);
+        options.UseInMemoryDatabase("InMemoryDb");
+        Log.Information("Using in-memory database for development.");
+ 
 });
-
 
 builder.Services.AddScoped<IApiKeyRepository, ApiKeyRepository>();
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
