@@ -15,7 +15,7 @@ public class Invoice
     public string? ErrorMessage { get; set; }
     public string? WarningMessage { get; set; }
     public string? ZatcaStatus { get; set; }
-
+    public string Type { get; set; } = "0100000";
     public string? ZatcaResponse { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

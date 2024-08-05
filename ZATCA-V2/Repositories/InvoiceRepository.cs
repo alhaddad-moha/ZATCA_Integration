@@ -45,6 +45,7 @@ namespace ZATCA_V2.Repositories
             var existingInvoice = await GetBySystemInvoiceId(invoice.SystemInvoiceId, invoice.CompanyId);
             if (existingInvoice != null)
             {
+                invoice.CreatedAt = existingInvoice.CreatedAt;
                 _context.Entry(existingInvoice).State = EntityState.Detached;
                 invoice.Id = existingInvoice.Id;
                 _context.Invoices.Update(invoice);
@@ -62,6 +63,20 @@ namespace ZATCA_V2.Repositories
         {
             return await _context.Invoices
                 .AnyAsync(i => i.SystemInvoiceId == invoiceId && i.CompanyId == companyId && i.IsSigned);
+        }
+
+        public async Task<List<Invoice>> GetAllUnsignedInvoices()
+        {
+            return await _context.Invoices
+                .Where(i => !i.IsSigned)
+                .ToListAsync();
+        }
+
+        public async Task<List<Invoice>> GetUnsignedInvoicesByCompanyId(int companyId)
+        {
+            return await _context.Invoices
+                .Where(i => !i.IsSigned && i.CompanyId == companyId)
+                .ToListAsync();
         }
     }
 }

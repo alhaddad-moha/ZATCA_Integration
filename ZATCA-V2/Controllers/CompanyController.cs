@@ -56,20 +56,27 @@ namespace ZATCA_V2.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateCompany(int id, [FromBody] Company company)
+        public async Task<IActionResult> UpdateCompany(int id, [FromBody] Company company)
         {
-            if (id != company.Id)
-                return BadRequest("Invalid ID");
+            if (id != company.Id && !await _companyRepository.Exists(id))
+            {
+                return new ApiResponse<object>(404, "Company not found.");
+            }
 
             await _companyRepository.Update(company);
-            return NoContent();
+            return new ApiResponse<object>(200, "Company updated successfully.");
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteCompany(int id)
+        public async Task<IActionResult> DeleteCompany(int id)
         {
+            if (!await _companyRepository.Exists(id))
+            {
+                return new ApiResponse<object>(404, "Company not found.");
+            }
+
             await _companyRepository.Delete(id);
-            return NoContent();
+            return new ApiResponse<object>(200, "Company deleted successfully.");
         }
     }
 }

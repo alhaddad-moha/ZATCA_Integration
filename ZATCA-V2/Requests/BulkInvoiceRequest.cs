@@ -15,7 +15,6 @@ public class BulkInvoiceRequest
 public class InvoiceData
 {
     [Required] public string Id { get; set; }
-    [Required] public int AddtionalId { get; set; }
     public string? InvoiceDocumentReferenceID { get; set; }
 
     [Required]

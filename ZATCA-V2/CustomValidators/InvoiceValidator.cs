@@ -9,7 +9,6 @@ public class InvoiceValidator : AbstractValidator<InvoiceData>
     {
         RuleFor(x => x.Id).NotEmpty().WithMessage("Id is required.");
 
-        RuleFor(x => x.AddtionalId).NotEmpty().WithMessage("AddtionalId is required.");
         RuleFor(x => x.IssueDate).NotEmpty().WithMessage("IssueDate is required.")
             .Matches(@"^\d{4}-\d{2}-\d{2}$").WithMessage("IssueDate must be a valid date in the format yyyy-MM-dd.");
         RuleFor(x => x.IssueTime).NotEmpty().WithMessage("IssueTime is required.")

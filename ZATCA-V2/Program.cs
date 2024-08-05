@@ -5,10 +5,7 @@ using ZATCA_V2.Data;
 using ZATCA_V2.Repositories;
 using ZATCA_V2.Repositories.Interfaces;
 using ZATCA_V2.ZATCA;
-using ZATCA_V2.Helpers;
-using HealthChecks.UI.Client;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+
 using Serilog;
 using ZATCA_V2.CustomValidators;
 using ZATCA_V2.Mappers;
@@ -42,7 +39,7 @@ builder.Logging.AddSerilog();
 builder.Logging.AddSlack(options =>
 {
     options.WebhookUrl = "https://hooks.slack.com/services/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";
-    options.LogLevel = LogLevel.Error;
+    options.LogLevel = LogLevel.Warning;
     options.NotificationLevel = LogLevel.Warning;
     options.ApplicationName = "ZATCA";
 });

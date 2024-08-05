@@ -23,6 +23,7 @@ namespace ZATCA_V2.Repositories
         public async Task Update(T entity)
         {
             _context.Entry(entity).State = EntityState.Modified;
+            _context.Entry(entity).Property("CreatedAt").IsModified = false;
             await _context.SaveChangesAsync();
         }
 

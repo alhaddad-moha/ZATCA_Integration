@@ -35,7 +35,8 @@ namespace ZATCA_V2.Utils
             }
 
 
-            inv.AdditionalDocumentReferenceICV.UUID = invoiceData.AddtionalId;
+            //TODO - Change it to dynamic to dynamic counter
+            inv.AdditionalDocumentReferenceICV.UUID = 1;
 
             PaymentMeans paymentMeans = new PaymentMeans();
             paymentMeans.PaymentMeansCode = invoiceData.PaymentDetails.Type;

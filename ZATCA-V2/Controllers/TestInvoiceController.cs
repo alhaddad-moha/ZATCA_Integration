@@ -505,7 +505,7 @@ namespace ZATCA_V2.Controllers
             inv.AdditionalDocumentReferencePIH.EmbeddedDocumentBinaryObject =
                 "NWZlY2ViNjZmZmM4NmYzOGQ5NTI3ODZjNmQ2OTZjNzljMmRiYzIzOWRkNGU5MWI0NjcyOWQ3M2EyN2ZiNTdlOQ==";
             // قيمة عداد الفاتورة
-            inv.AdditionalDocumentReferenceICV.UUID = invoiceData.AddtionalId;
+            inv.AdditionalDocumentReferenceICV.UUID = 1;
             //بيانات الدفع 
             // اكواد معين
             // اختيارى كود الدفع
@@ -654,7 +654,7 @@ namespace ZATCA_V2.Controllers
             inv.AdditionalDocumentReferencePIH.EmbeddedDocumentBinaryObject =
                 "NWZlY2ViNjZmZmM4NmYzOGQ5NTI3ODZjNmQ2OTZjNzljMmRiYzIzOWRkNGU5MWI0NjcyOWQ3M2EyN2ZiNTdlOQ==";
 
-            inv.AdditionalDocumentReferenceICV.UUID = invoiceData.AddtionalId;
+            inv.AdditionalDocumentReferenceICV.UUID = 1;
 
             PaymentMeans paymentMeans = new PaymentMeans();
             paymentMeans.PaymentMeansCode = invoiceData.PaymentDetails.Type;
