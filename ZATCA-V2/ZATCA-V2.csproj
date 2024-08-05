@@ -10,6 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Asp.Versioning.Mvc" Version="6.4.1" />
+    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="6.4.0" />
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.1" />
     <PackageReference Include="AspNetCore.HealthChecks.UI" Version="6.0.5" />
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="6.0.5" />
@@ -41,6 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Controllers\V2\" />
     <Folder Include="Credentials\ConfigFiles\" />
     <Folder Include="Credentials\CSR\" />
     <Folder Include="Credentials\Keys\" />

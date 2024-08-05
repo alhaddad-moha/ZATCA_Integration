@@ -1,11 +1,11 @@
 using System.Text.Json.Serialization;
+using Asp.Versioning;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using ZATCA_V2.Data;
 using ZATCA_V2.Repositories;
 using ZATCA_V2.Repositories.Interfaces;
 using ZATCA_V2.ZATCA;
-
 using Serilog;
 using ZATCA_V2.CustomValidators;
 using ZATCA_V2.Mappers;
@@ -14,6 +14,21 @@ using ZATCA_V2.Middlewares;
 using SlackLogger;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddApiVersioning(option =>
+{
+    option.AssumeDefaultVersionWhenUnspecified = true;
+    option.DefaultApiVersion = new ApiVersion(1, 0);
+    option.ReportApiVersions = true;
+    option.ApiVersionReader = ApiVersionReader.Combine(
+        new QueryStringApiVersionReader("api-version"),
+        new HeaderApiVersionReader("X-Version"),
+        new MediaTypeApiVersionReader("ver"));
+}).AddApiExplorer(option =>
+{
+    option.GroupNameFormat = "'v'VVV";
+    option.SubstituteApiVersionInUrl = true;
+});
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
