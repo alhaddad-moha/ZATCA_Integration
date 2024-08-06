@@ -103,9 +103,6 @@ builder.Services.AddDbContext<DataContext>(options =>
     // Log the final connection string (excluding password for security)
     var loggedConnectionString = connectionString.Replace("password", "*****");
     Log.Information("Final connection string used by DbContext: {ConnectionString}", loggedConnectionString);
-        options.UseInMemoryDatabase("InMemoryDb");
-        Log.Information("Using in-memory database for development.");
- 
 });
 
 
