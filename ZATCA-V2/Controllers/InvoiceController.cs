@@ -351,7 +351,7 @@ namespace ZATCA_V2.Controllers
                     return Ok(new { message = "No unsigned invoices found." });
                 }
 
-                Company? company = null;
+                Company? company;
                 CompanyCredentials? companyCredentials = null;
 
                 if (!isForAll)
@@ -395,33 +395,36 @@ namespace ZATCA_V2.Controllers
                         invoiceHash = invoice.Hash,
                         uuid = invoice.UUID
                     };
-                    var invoiceResponse =
-                        await _zatcaService.ReSendInvoiceToZATCA(companyCredentials, invoiceRequestBody, invoice.Type);
-                    invoice.ZatcaResponse = JsonConvert.SerializeObject(invoiceResponse);
-                    invoice.StatusCode = invoiceResponse.StatusCode;
-
-                    if (invoiceResponse.IsSuccess)
+                    if (companyCredentials != null)
                     {
-                        invoice.IsSigned = true;
-
-                        if (invoiceResponse.StatusCode == 202)
-                        {
-                            invoice.WarningMessage = invoiceResponse.WarningMessage;
-                        }
-                    }
-                    else
-                    {
+                        var invoiceResponse =
+                            await _zatcaService.ReSendInvoiceToZATCA(companyCredentials, invoiceRequestBody, invoice.Type);
+                        invoice.ZatcaResponse = JsonConvert.SerializeObject(invoiceResponse);
                         invoice.StatusCode = invoiceResponse.StatusCode;
-                        invoice.ErrorMessage = invoiceResponse.ErrorMessage;
+
+                        if (invoiceResponse.IsSuccess)
+                        {
+                            invoice.IsSigned = true;
+
+                            if (invoiceResponse.StatusCode == 202)
+                            {
+                                invoice.WarningMessage = invoiceResponse.WarningMessage;
+                            }
+                        }
+                        else
+                        {
+                            invoice.StatusCode = invoiceResponse.StatusCode;
+                            invoice.ErrorMessage = invoiceResponse.ErrorMessage;
+                        }
+
+                        await _invoiceRepository.CreateOrUpdate(invoice);
+
+                        responses.Add(new
+                        {
+                            Invoice = invoice,
+                            ZATCA = invoiceResponse,
+                        });
                     }
-
-                    await _invoiceRepository.CreateOrUpdate(invoice);
-
-                    responses.Add(new
-                    {
-                        Invoice = invoice,
-                        ZATCA = invoiceResponse,
-                    });
                 }
 
                 return Ok(responses);
