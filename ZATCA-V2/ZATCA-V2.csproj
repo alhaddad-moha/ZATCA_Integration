@@ -35,12 +35,12 @@
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.7" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.20.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
-    <PackageReference Include="SaxonHE10Net31Api" Version="10.9.9" />
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.2" />
     <PackageReference Include="SlackLogger" Version="4.0.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
+    <PackageReference Include="SaxonHE10Net31Api" Version="10.9.0.1" />
     <PackageReference Include="System.Security.Cryptography.Xml" Version="7.0.1" />
   </ItemGroup>
 
@@ -58,61 +58,16 @@
     <Folder Include="Invoices\Signed\Standard\Credit\" />
     <Folder Include="Invoices\Signed\Standard\Debit\" />
     <Folder Include="Invoices\Signed\Standard\Invoices\" />
+    <Folder Include="Samples\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="BouncyCastle.Crypto">
-      <HintPath>libs\BouncyCastle.Crypto.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.Java">
-      <HintPath>libs\IKVM.Java.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.Core">
-      <HintPath>libs\IKVM.OpenJDK.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.Text">
-      <HintPath>libs\IKVM.OpenJDK.Text.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.Util">
-      <HintPath>libs\IKVM.OpenJDK.Util.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.XML.API">
-      <HintPath>libs\IKVM.OpenJDK.XML.API.dll</HintPath>
-    </Reference>
-
-    <Reference Include="Microsoft.Extensions.DependencyModel">
-      <HintPath>libs\Microsoft.Extensions.DependencyModel.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Posix">
-      <HintPath>libs\Mono.Posix.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Unix">
-      <HintPath>libs\Mono.Unix.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>libs\Newtonsoft.Json.dll</HintPath>
-    </Reference>
+    
     <Reference Include="Saxon.HE">
       <HintPath>libs\Saxon.HE.dll</HintPath>
     </Reference>
-    <Reference Include="SaxonHE10Net31">
-      <HintPath>libs\SaxonHE10Net31.dll</HintPath>
-    </Reference>
-    <Reference Include="SaxonHE10Net31Api">
-      <HintPath>libs\SaxonHE10Net31Api.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Data.Odbc">
-      <HintPath>libs\System.Data.Odbc.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Formats.Asn1">
-      <HintPath>libs\System.Formats.Asn1.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.Pkcs">
-      <HintPath>libs\System.Security.Cryptography.Pkcs.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.Xml">
-      <HintPath>libs\System.Security.Cryptography.Xml.dll</HintPath>
-    </Reference>
+  
+  
     <Reference Include="ZatcaIntegrationSDK">
       <HintPath>libs\ZatcaIntegrationSDK.dll</HintPath>
     </Reference>

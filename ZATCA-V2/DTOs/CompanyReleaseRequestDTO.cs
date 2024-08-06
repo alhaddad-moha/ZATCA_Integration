@@ -47,8 +47,6 @@ namespace ZATCA_V2.DTOs
 
         public string EmailAddress { get; set; }
 
-        public CompanyReleaseRequestDto()
-        {
-        }
+      
     }
 }
