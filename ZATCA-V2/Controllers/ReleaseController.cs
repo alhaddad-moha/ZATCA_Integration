@@ -80,8 +80,10 @@ namespace ZATCA_V2.Controllers
 
 
                 CSIDGenerator generator = new CSIDGenerator(_mode);
+                string fullPath = Path.Combine(Directory.GetCurrentDirectory(), Constants.SampleInvoicesPath);
+
                 CertificateResponse response =
-                    await generator.GenerateCSID(certrequest, inv, Directory.GetCurrentDirectory());
+                    await generator.GenerateCSID(certrequest, inv, fullPath);
 
                 if (response.IsSuccess)
                 {
@@ -98,7 +100,7 @@ namespace ZATCA_V2.Controllers
                         PrivateKey = response.PrivateKey
                     };
 
-                    company.CompanyCredentials.Add(companyCredentials);
+                    if (company.CompanyCredentials != null) company.CompanyCredentials.Add(companyCredentials);
 
                     await _companyCredentialsRepository.Create(companyCredentials);
                     await _companyRepository.Update(company);
@@ -146,8 +148,10 @@ namespace ZATCA_V2.Controllers
 
 
                 CSIDGenerator generator = new CSIDGenerator(_mode);
+                string fullPath = Path.Combine(Directory.GetCurrentDirectory(), Constants.SampleInvoicesPath);
+
                 CertificateResponse response =
-                    await generator.GenerateCSID(certRequest, inv, Directory.GetCurrentDirectory());
+                    await generator.GenerateCSID(certRequest, inv, fullPath);
 
                 if (response.IsSuccess)
                 {
@@ -193,7 +197,7 @@ namespace ZATCA_V2.Controllers
             }
         }
 
-        private CertificateRequest GenerateCertificateRequestData(Company company, string otp = null)
+        private CertificateRequest GenerateCertificateRequestData(Company company, string? otp = null)
         {
             return new CertificateRequest
             {

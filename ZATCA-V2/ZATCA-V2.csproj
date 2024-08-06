@@ -46,6 +46,7 @@
 
   <ItemGroup>
     <Folder Include="Controllers\V2\" />
+    <Folder Include="Samples\" />
     <Folder Include="Credentials\ConfigFiles\" />
     <Folder Include="Credentials\CSR\" />
     <Folder Include="Credentials\Keys\" />
