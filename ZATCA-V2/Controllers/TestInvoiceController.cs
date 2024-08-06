@@ -125,7 +125,7 @@ namespace ZATCA_V2.Controllers
             ComplianceCsrResponse tokenresponse = new ComplianceCsrResponse();
             InvoiceReportingRequest invrequestbody = new InvoiceReportingRequest();
 
-            string csr = Helper.ReadFileToString(Constants.CSR_Path);
+            string csr = Helper.ReadFileToString(Constants.CsrPath);
 
             tokenresponse = await apireqlogic.GetComplianceCSIDAPI("123456", csr);
             if (string.IsNullOrEmpty(tokenresponse.ErrorMessage))

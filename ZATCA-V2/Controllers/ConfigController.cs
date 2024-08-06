@@ -39,6 +39,38 @@ namespace ZATCA_V2.Controllers
             _context = dataContext;
         }
 
+        [HttpGet("testFilePermission")]
+        public async Task<IActionResult> GenerateFile()
+        {
+            try
+            {
+                // Define the path where you want to create the file
+                string directoryPath = Path.Combine(Directory.GetCurrentDirectory(), Constants.SampleInvoicesPath);
+
+                // Ensure the directory exists
+                if (!Directory.Exists(directoryPath))
+                {
+                    Directory.CreateDirectory(directoryPath);
+                }
+
+                // Define the path for the new file
+                string filePath = Path.Combine(directoryPath, "testfile.txt");
+
+                // Try to create and write to the file
+                await System.IO.File.WriteAllTextAsync(filePath, "Test content");
+
+                // Optionally delete the file after the test
+                System.IO.File.Delete(filePath);
+
+                return Ok("File created successfully.");
+            }
+            catch (Exception ex)
+            {
+                // Return an error message if something goes wrong
+                return StatusCode(500, $"Error: {ex.Message}");
+            }
+        }
+
 
         // Health check endpoint
         [HttpGet("health")]
