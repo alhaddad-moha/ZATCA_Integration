@@ -39,38 +39,6 @@ namespace ZATCA_V2.Controllers
             _context = dataContext;
         }
 
-        [HttpGet("testFilePermission")]
-        public async Task<IActionResult> GenerateFile()
-        {
-            try
-            {
-                // Define the path where you want to create the file
-                string directoryPath = Path.Combine(Directory.GetCurrentDirectory(), Constants.SampleInvoicesPath);
-
-                // Ensure the directory exists
-                if (!Directory.Exists(directoryPath))
-                {
-                    Directory.CreateDirectory(directoryPath);
-                }
-
-                // Define the path for the new file
-                string filePath = Path.Combine(directoryPath, "testfile.txt");
-
-                // Try to create and write to the file
-                await System.IO.File.WriteAllTextAsync(filePath, "Test content");
-
-                // Optionally delete the file after the test
-                System.IO.File.Delete(filePath);
-
-                return Ok("File created successfully.");
-            }
-            catch (Exception ex)
-            {
-                // Return an error message if something goes wrong
-                return StatusCode(500, $"Error: {ex.Message}");
-            }
-        }
-
 
         // Health check endpoint
         [HttpGet("health")]
@@ -115,6 +83,7 @@ namespace ZATCA_V2.Controllers
         }
 
         [ServiceFilter(typeof(ApiKeyFilter))]
+
         [HttpPost("generateCSR/{companyId}")]
         public async Task<IActionResult> GenerateCsr(int companyId)
         {
@@ -143,8 +112,8 @@ namespace ZATCA_V2.Controllers
                 return StatusCode(500, new { message = ex.Message, status = 500 });
             }
         }
-
         [ServiceFilter(typeof(ApiKeyFilter))]
+
         [HttpPost("generateKeys/{companyId}")]
         public async Task<IActionResult> GenerateKeys(int companyId,
             CertificateConfiguration certificateConfiguration)
@@ -165,8 +134,8 @@ namespace ZATCA_V2.Controllers
                 string generatePublicKeyCommand = $"openssl ec -in {privateKeyPath} -pubout -out {publicKeyPath}";
 
 
-                await Helper.RunCommandInCmd(generatePrivateKeyCommand);
-                await Helper.RunCommandInCmd(generatePublicKeyCommand);
+                await Helper.RunCommandInCMD(generatePrivateKeyCommand);
+                await Helper.RunCommandInCMD(generatePublicKeyCommand);
 
                 if (System.IO.File.Exists(privateKeyPath))
                 {
@@ -177,7 +146,7 @@ namespace ZATCA_V2.Controllers
                             $"openssl req -new -sha256 -key {privateKeyPath} -extensions v3_req -config {configFilePath} -out {csrPath}";
 
                         // Generate CSR
-                        await Helper.RunCommandInCmd(generateCSRCommand);
+                        await Helper.RunCommandInCMD(generateCSRCommand);
                     }
                     else
                     {
@@ -210,8 +179,8 @@ namespace ZATCA_V2.Controllers
                 return StatusCode(500, new { message = $"Internal Server Error: {ex.Message}", status = 500 });
             }
         }
-
         [ServiceFilter(typeof(ApiKeyFilter))]
+
         [HttpPost("generateCSID/{companyId}")]
         public async Task<IActionResult> GenerateCSID(int companyId)
         {
@@ -271,8 +240,8 @@ namespace ZATCA_V2.Controllers
                 });
             }
         }
-
         [ServiceFilter(typeof(ApiKeyFilter))]
+
         [HttpPost("generateCSIDTest/{companyId}")]
         public async Task<IActionResult> GenerateCSIDTest(int companyId)
         {

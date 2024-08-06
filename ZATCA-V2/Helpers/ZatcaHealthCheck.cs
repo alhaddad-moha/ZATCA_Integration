@@ -14,10 +14,10 @@
             using var httpClient = new HttpClient();
             try
             {
-                var response =  httpClient.GetAsync("https://sandbox.zatca.gov.sa/").Result;
+                var response = httpClient.GetAsync("https://sandbox.zatca.gov.sa/").Result;
                 if (response.IsSuccessStatusCode)
                 {
-                    return  HealthCheckResult.Healthy("ZATCA URL is reachable");
+                    return HealthCheckResult.Healthy("ZATCA URL is reachable");
                 }
                 return HealthCheckResult.Unhealthy("ZATCA URL is unreachable");
             }

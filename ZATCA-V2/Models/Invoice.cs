@@ -1,4 +1,5 @@
-﻿
+﻿using net.sf.saxon.resource;
+
 namespace ZATCA_V2.Models;
 
 public class Invoice

@@ -1,8 +1,10 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml;
+using System.Xml.Serialization;
 
 namespace ZATCA_V2.Helpers
 {
@@ -16,13 +18,8 @@ namespace ZATCA_V2.Helpers
 
         public static string DecodeFromBase64(string? encodedData)
         {
-            if (encodedData != null)
-            {
-                byte[] bytes = Convert.FromBase64String(encodedData);
-                return Encoding.UTF8.GetString(bytes);
-            }
-
-            return "";
+            byte[] bytes = Convert.FromBase64String(encodedData);
+            return Encoding.UTF8.GetString(bytes);
         }
 
         public static void SaveToFile(string content, string filePath)
@@ -47,7 +44,7 @@ namespace ZATCA_V2.Helpers
             }
         }
 
-        public static string? ReadFileToString(string filePath)
+        public static string ReadFileToString(string filePath)
         {
             try
             {
@@ -126,7 +123,7 @@ namespace ZATCA_V2.Helpers
         public static string GetEncodedCertificateHash()
         {
             string certificateFilePath = "Utils/keys/hashed-cert.txt";
-            string certificateHash = File.ReadAllText(certificateFilePath);
+            string certificateHash = System.IO.File.ReadAllText(certificateFilePath);
             return EncodeToBase64(certificateHash);
         }
 
@@ -143,12 +140,11 @@ namespace ZATCA_V2.Helpers
             catch (Exception ex)
             {
                 Console.WriteLine($"Failed to load XML from file. Error: {ex.Message}");
-                XmlDocument xmlDoc = new XmlDocument();
-                return xmlDoc;
+                return null;
             }
         }
 
-        public static async Task RunCommandInCmd(string command)
+        public static async Task RunCommandInCMD(string command)
         {
             // Create a process start info for CMD
             ProcessStartInfo processStartInfo = new ProcessStartInfo
@@ -162,13 +158,13 @@ namespace ZATCA_V2.Helpers
             };
 
             // Start the process
-            using (Process process = new Process())
+            using (Process process = new Process { StartInfo = processStartInfo })
             {
-                process.StartInfo = processStartInfo;
                 process.Start();
 
                 // Read the standard output and error
                 string output = await process.StandardOutput.ReadToEndAsync();
+                string error = await process.StandardError.ReadToEndAsync();
 
                 // Wait for the process to exit
                 process.WaitForExit();
@@ -188,7 +184,7 @@ namespace ZATCA_V2.Helpers
             catch (Exception ex)
             {
                 Console.WriteLine($"Error reading file: {ex.Message}");
-                return "";
+                return null;
             }
         }
 
@@ -211,8 +207,8 @@ namespace ZATCA_V2.Helpers
             string beginMarker = "-----BEGIN CERTIFICATE REQUEST-----";
             string endMarker = "-----END CERTIFICATE REQUEST-----";
 
-            int startIndex = output.IndexOf(beginMarker, StringComparison.Ordinal);
-            int endIndex = output.IndexOf(endMarker, startIndex + beginMarker.Length, StringComparison.Ordinal);
+            int startIndex = output.IndexOf(beginMarker);
+            int endIndex = output.IndexOf(endMarker, startIndex + beginMarker.Length);
 
             if (startIndex != -1 && endIndex != -1)
             {
@@ -226,7 +222,7 @@ namespace ZATCA_V2.Helpers
             {
                 // Handle the case where the markers are not found
                 Console.WriteLine("Markers not found in the output.");
-                return "";
+                return null;
             }
         }
     }
