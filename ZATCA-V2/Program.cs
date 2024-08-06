@@ -170,11 +170,12 @@ app.MapHealthChecksUI(setup =>
 
 Log.Information("Running in {Environment} environment", app.Environment.EnvironmentName);
 
+app.UseSwagger();
+app.UseSwaggerUI();
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
 }
+
 else
 {
     Log.Information("Running in a non-Development environment");
