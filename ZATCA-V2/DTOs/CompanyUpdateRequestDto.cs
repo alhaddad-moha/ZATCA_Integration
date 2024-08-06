@@ -1,10 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using ZatcaIntegrationSDK;
 using ZatcaIntegrationSDK.APIHelper;
 
 namespace ZATCA_V2.DTOs
 {
-    public class CompanyReleaseRequestDto
+    public class CompanyUpdateRequestDto
     {
         [Required(ErrorMessage = "CommonName is required.")]
         public string CommonName { get; set; }
@@ -38,17 +37,12 @@ namespace ZATCA_V2.DTOs
         [Required(ErrorMessage = "Location is required.")]
         public AddressDto Address { get; set; }
 
-        [Required(ErrorMessage = "OTP is required.")]
-        public string OTP { get; set; }
 
         public Mode Mode { get; set; } = Mode.developer;
 
         public string IdentificationCode { get; set; } = "SA";
 
+        [Required(ErrorMessage = "EmailAddress is required.")]
         public string EmailAddress { get; set; }
-
-        public CompanyReleaseRequestDto()
-        {
-        }
     }
 }

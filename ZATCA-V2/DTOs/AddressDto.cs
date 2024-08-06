@@ -30,9 +30,6 @@ namespace ZATCA_V2.DTOs
         public string CitySubdivisionName { get; set; }
 
         public string IdentificationCode { get; set; } = "SA";
-
-        public AddressDto()
-        {
-        }
+        
     }
 }

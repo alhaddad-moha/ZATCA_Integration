@@ -90,7 +90,7 @@ namespace ZATCA_V2.Controllers
             }
             catch (SqlException ex)
             {
-                healthStatus = healthStatus with { DatabaseConnection = $"Unhealthy: SQL Exception: {ex.Message}" };
+                healthStatus =  healthStatus with { DatabaseConnection = $"Unhealthy: SQL Exception: {ex.Message}" };
             }
             catch (Exception ex)
             {

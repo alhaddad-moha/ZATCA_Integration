@@ -176,7 +176,7 @@ namespace ZATCA_V2.Controllers
                     Res = ExtractInvoiceDetails(res)
                 };
 
-                return Ok(response);
+                return new ApiResponse<object>(201, "Invoices created successfully.", response);
             }
             catch (CustomValidationException ex)
             {
@@ -398,7 +398,8 @@ namespace ZATCA_V2.Controllers
                     if (companyCredentials != null)
                     {
                         var invoiceResponse =
-                            await _zatcaService.ReSendInvoiceToZATCA(companyCredentials, invoiceRequestBody, invoice.Type);
+                            await _zatcaService.ReSendInvoiceToZATCA(companyCredentials, invoiceRequestBody,
+                                invoice.Type);
                         invoice.ZatcaResponse = JsonConvert.SerializeObject(invoiceResponse);
                         invoice.StatusCode = invoiceResponse.StatusCode;
 
@@ -419,6 +420,7 @@ namespace ZATCA_V2.Controllers
 
                         await _invoiceRepository.CreateOrUpdate(invoice);
 
+
                         responses.Add(new
                         {
                             Invoice = invoice,
@@ -427,12 +429,12 @@ namespace ZATCA_V2.Controllers
                     }
                 }
 
-                return Ok(responses);
+                return new ApiResponse<object>(201, "Invoices singed successfully.", responses);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while sending unsigned invoices to ZATCA.");
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return new ApiResponse<object>(500, $"An error occurred: {ex.Message}");
             }
         }
 
@@ -460,7 +462,6 @@ namespace ZATCA_V2.Controllers
         private DBInvoiceModel CreateInvoiceFromResult(Result res, Company company, string systemInvoiceId,
             string invoiceType = "0100000")
         {
-
             return new DBInvoiceModel
             {
                 UUID = res.UUID,

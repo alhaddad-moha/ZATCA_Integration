@@ -158,18 +158,16 @@ namespace ZATCA_V2.Helpers
             };
 
             // Start the process
-            using (Process process = new Process { StartInfo = processStartInfo })
-            {
-                process.Start();
+            using Process process = new Process { StartInfo = processStartInfo };
+            process.Start();
 
-                // Read the standard output and error
-                string output = await process.StandardOutput.ReadToEndAsync();
-                string error = await process.StandardError.ReadToEndAsync();
+            // Read the standard output and error
+            string output = await process.StandardOutput.ReadToEndAsync();
+            string error = await process.StandardError.ReadToEndAsync();
 
-                // Wait for the process to exit
-                process.WaitForExit();
-                Console.WriteLine($"Command executed successfully. Output: {output}");
-            }
+            // Wait for the process to exit
+            process.WaitForExit();
+            Console.WriteLine($"Command executed successfully. Output: {output}");
         }
 
         public static string ReadFromFile(string filePath)
@@ -207,8 +205,8 @@ namespace ZATCA_V2.Helpers
             string beginMarker = "-----BEGIN CERTIFICATE REQUEST-----";
             string endMarker = "-----END CERTIFICATE REQUEST-----";
 
-            int startIndex = output.IndexOf(beginMarker);
-            int endIndex = output.IndexOf(endMarker, startIndex + beginMarker.Length);
+            int startIndex = output.IndexOf(beginMarker, StringComparison.Ordinal);
+            int endIndex = output.IndexOf(endMarker, startIndex + beginMarker.Length, StringComparison.Ordinal);
 
             if (startIndex != -1 && endIndex != -1)
             {

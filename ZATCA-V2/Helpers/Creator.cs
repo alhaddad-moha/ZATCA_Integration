@@ -88,4 +88,54 @@ public class Creator
             DeviceSerialNumber = company.DeviceSerialNumber
         };
     }
+
+    public static Company GenerateCompanyData(CompanyReleaseRequestDto companyReleaseRequest)
+    {
+        return new Company
+        {
+            CommonName = companyReleaseRequest.CommonName,
+            CommercialRegistrationNumber = companyReleaseRequest.CommercialRegistrationNumber,
+            TaxRegistrationNumber = companyReleaseRequest.TaxRegistrationNumber,
+            OrganizationUnitName = companyReleaseRequest.OrganizationUnitName,
+            OrganizationName = companyReleaseRequest.OrganizationName,
+            InvoiceType = companyReleaseRequest.InvoiceType,
+            EmailAddress = companyReleaseRequest.EmailAddress,
+            BusinessIndustry = companyReleaseRequest.BusinessIndustry,
+            CountryName = companyReleaseRequest.CountryName,
+            StreetName = companyReleaseRequest.Address.StreetName,
+            AdditionalStreetName = companyReleaseRequest.Address.AdditionalStreetName,
+            CountrySubentity = companyReleaseRequest.Address.CountrySubentity,
+            CityName = companyReleaseRequest.Address.CityName,
+            CitySubdivisionName = companyReleaseRequest.Address.CitySubdivisionName,
+            BuildingNumber = companyReleaseRequest.Address.BuildingNumber,
+            PostalZone = companyReleaseRequest.Address.PostalZone,
+            IdentificationCode = companyReleaseRequest.IdentificationCode,
+            DeviceSerialNumber = companyReleaseRequest.DeviceSerialNumber,
+            CompanyCredentials = new List<CompanyCredentials>() // Initialize the CompanyCredentials list
+        };
+    }
+
+    public static Company UpdateCompanyData(Company existingCompany, CompanyUpdateRequestDto companyUpdateRequest)
+    {
+        existingCompany.CommonName = companyUpdateRequest.CommonName;
+        existingCompany.CommercialRegistrationNumber = companyUpdateRequest.CommercialRegistrationNumber;
+        existingCompany.TaxRegistrationNumber = companyUpdateRequest.TaxRegistrationNumber;
+        existingCompany.OrganizationUnitName = companyUpdateRequest.OrganizationUnitName;
+        existingCompany.OrganizationName = companyUpdateRequest.OrganizationName;
+        existingCompany.InvoiceType = companyUpdateRequest.InvoiceType;
+        existingCompany.EmailAddress = companyUpdateRequest.EmailAddress;
+        existingCompany.BusinessIndustry = companyUpdateRequest.BusinessIndustry;
+        existingCompany.CountryName = companyUpdateRequest.CountryName;
+        existingCompany.StreetName = companyUpdateRequest.Address.StreetName;
+        existingCompany.AdditionalStreetName = companyUpdateRequest.Address.AdditionalStreetName;
+        existingCompany.CountrySubentity = companyUpdateRequest.Address.CountrySubentity;
+        existingCompany.CityName = companyUpdateRequest.Address.CityName;
+        existingCompany.CitySubdivisionName = companyUpdateRequest.Address.CitySubdivisionName;
+        existingCompany.BuildingNumber = companyUpdateRequest.Address.BuildingNumber;
+        existingCompany.PostalZone = companyUpdateRequest.Address.PostalZone;
+        existingCompany.IdentificationCode = companyUpdateRequest.IdentificationCode;
+        existingCompany.DeviceSerialNumber = companyUpdateRequest.DeviceSerialNumber;
+
+        return existingCompany;
+    }
 }

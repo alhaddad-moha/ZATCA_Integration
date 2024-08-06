@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
 using ZATCA_V2.DTOs;
+using ZATCA_V2.Helpers;
 using ZATCA_V2.Middlewares;
 using ZATCA_V2.Models;
 using ZATCA_V2.Repositories.Interfaces;
 using ZATCA_V2.Responses;
+using ZatcaIntegrationSDK;
+using ZatcaIntegrationSDK.HelperContracts;
+using Invoice = ZATCA_V2.Models.Invoice;
 
 namespace ZATCA_V2.Controllers
 {
@@ -56,15 +60,63 @@ namespace ZATCA_V2.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCompany(int id, [FromBody] Company company)
+        public async Task<IActionResult> UpdateCompany(int id, [FromBody] CompanyUpdateRequestDto companyUpdateRequest)
         {
-            if (id != company.Id && !await _companyRepository.Exists(id))
+            try
             {
-                return new ApiResponse<object>(404, "Company not found.");
-            }
+                var errors = new Dictionary<string, List<string>>();
 
-            await _companyRepository.Update(company);
-            return new ApiResponse<object>(200, "Company updated successfully.");
+                // Check if the company exists by ID
+                var existingCompany = await _companyRepository.GetById(id);
+                if (existingCompany == null)
+                {
+                    return new ApiResponse<object>(404, "Company not found.");
+                }
+
+                var existingCompanyByTax =
+                    await _companyRepository.FindByTaxRegistrationNumber(companyUpdateRequest.TaxRegistrationNumber);
+                if (existingCompanyByTax != null && existingCompanyByTax.Id != id)
+                {
+                    if (!errors.ContainsKey(nameof(companyUpdateRequest.TaxRegistrationNumber)))
+                    {
+                        errors[nameof(companyUpdateRequest.TaxRegistrationNumber)] = new List<string>();
+                    }
+
+                    errors[nameof(companyUpdateRequest.TaxRegistrationNumber)]
+                        .Add("Tax Registration Number already exists.");
+                }
+
+                // Check for duplicate CommercialRegistrationNumber
+                var existingCompanyByCommercial =
+                    await _companyRepository.FindByCommercialRegistrationNumber(companyUpdateRequest
+                        .CommercialRegistrationNumber);
+                if (existingCompanyByCommercial != null && existingCompanyByCommercial.Id != id)
+                {
+                    if (!errors.ContainsKey(nameof(companyUpdateRequest.CommercialRegistrationNumber)))
+                    {
+                        errors[nameof(companyUpdateRequest.CommercialRegistrationNumber)] = new List<string>();
+                    }
+
+                    errors[nameof(companyUpdateRequest.CommercialRegistrationNumber)]
+                        .Add("Commercial Registration Number already exists.");
+                }
+
+                // If there are validation errors, return them
+                if (errors.Any())
+                {
+                    return new ApiResponse<object>(400, "Validation errors occurred.", null, errors);
+                }
+
+                // Update company data without modifying CompanyCredentials
+                existingCompany = Creator.UpdateCompanyData(existingCompany, companyUpdateRequest);
+                await _companyRepository.Update(existingCompany);
+
+                return new ApiResponse<object>(200, "Company updated successfully.", existingCompany);
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<object>(500, $"An error occurred: {ex.Message}");
+            }
         }
 
         [HttpDelete("{id}")]

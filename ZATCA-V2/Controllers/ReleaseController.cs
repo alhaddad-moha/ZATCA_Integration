@@ -73,7 +73,7 @@ namespace ZATCA_V2.Controllers
                     return new ApiResponse<object>(400, "Validation errors occurred.", null, errors);
                 }
 
-                var company = GenerateCompanyData(companyReleaseRequest);
+                var company = Creator.GenerateCompanyData(companyReleaseRequest);
                 Invoice inv = GenerateInvoice(company);
 
                 CertificateRequest certrequest = GetCsrRequestData(companyReleaseRequest);
@@ -141,12 +141,10 @@ namespace ZATCA_V2.Controllers
                     return new ApiResponse<object>(404, "Company not found.");
                 }
 
-                // Generate CSID for the existing company
                 Invoice inv = GenerateInvoice(existingCompany);
 
-                CertificateRequest certRequest = GenerateCertificateRequestData(existingCompany);
-
-
+                CertificateRequest certRequest = GenerateCertificateRequestData(existingCompany,request.Otp);
+                
                 CSIDGenerator generator = new CSIDGenerator(_mode);
                 string fullPath = Path.Combine(Directory.GetCurrentDirectory(), Constants.SampleInvoicesPath);
 
@@ -285,32 +283,6 @@ namespace ZATCA_V2.Controllers
             certrequest.BusinessCategory = companyReleaseRequest.BusinessIndustry;
             certrequest.InvoiceType = companyReleaseRequest.InvoiceType;
             return certrequest;
-        }
-
-        private Company GenerateCompanyData(CompanyReleaseRequestDto companyReleaseRequest)
-        {
-            return new Company
-            {
-                CommonName = companyReleaseRequest.CommonName,
-                CommercialRegistrationNumber = companyReleaseRequest.CommercialRegistrationNumber,
-                TaxRegistrationNumber = companyReleaseRequest.TaxRegistrationNumber,
-                OrganizationUnitName = companyReleaseRequest.OrganizationUnitName,
-                OrganizationName = companyReleaseRequest.OrganizationName,
-                InvoiceType = companyReleaseRequest.InvoiceType,
-                EmailAddress = companyReleaseRequest.EmailAddress,
-                BusinessIndustry = companyReleaseRequest.BusinessIndustry,
-                CountryName = companyReleaseRequest.CountryName,
-                StreetName = companyReleaseRequest.Address.StreetName,
-                AdditionalStreetName = companyReleaseRequest.Address.AdditionalStreetName,
-                CountrySubentity = companyReleaseRequest.Address.CountrySubentity,
-                CityName = companyReleaseRequest.Address.CityName,
-                CitySubdivisionName = companyReleaseRequest.Address.CitySubdivisionName,
-                BuildingNumber = companyReleaseRequest.Address.BuildingNumber,
-                PostalZone = companyReleaseRequest.Address.PostalZone,
-                IdentificationCode = companyReleaseRequest.IdentificationCode,
-                DeviceSerialNumber = companyReleaseRequest.DeviceSerialNumber,
-                CompanyCredentials = new List<CompanyCredentials>() // Initialize the CompanyCredentials list
-            };
         }
     }
 }
