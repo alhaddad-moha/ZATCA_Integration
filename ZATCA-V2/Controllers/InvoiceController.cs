@@ -134,7 +134,15 @@ namespace ZATCA_V2.Controllers
                 }
 
                 var invoiceResponse = await _zatcaService.SendInvoiceToZATCA(companyCredentials, res, inv);
-                invoice.ZatcaResponse = JsonConvert.SerializeObject(invoiceResponse); // Serialize the response to JSON
+                try
+                {
+                    invoice.ZatcaResponse =
+                        JsonConvert.SerializeObject(invoiceResponse); // Serialize the response to JSON
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Error");
+                }
 
                 invoice.StatusCode = invoiceResponse.StatusCode;
 

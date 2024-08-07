@@ -19,7 +19,9 @@
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="6.0.5" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="6.0.5" />
         <PackageReference Include="AutoMapper" Version="13.0.1" />
+        <PackageReference Include="BouncyCastle.Cryptography" Version="2.4.0" />
         <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.9.2" />
+        <PackageReference Include="ICSharpCode.SharpZipLib.dll" Version="0.85.4.369" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.27" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.27">
             <PrivateAssets>all</PrivateAssets>
@@ -34,13 +36,18 @@
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
         <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.7" />
         <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.20.1" />
+        <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="SaxonHE10Net31" Version="10.9.0" />
+        <PackageReference Include="SaxonHE10Net31Api" Version="10.9.0.1" />
         <PackageReference Include="Serilog.AspNetCore" Version="8.0.2" />
         <PackageReference Include="SlackLogger" Version="4.0.2" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
         <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
         <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
-        <PackageReference Include="SaxonHE10Net31Api" Version="10.9.0.1" />
+        <PackageReference Include="System.Data.Odbc" Version="6.0.1" />
+
+        <PackageReference Include="System.Security.Cryptography.Pkcs" Version="7.0.2" />
         <PackageReference Include="System.Security.Cryptography.Xml" Version="7.0.1" />
     </ItemGroup>
 
