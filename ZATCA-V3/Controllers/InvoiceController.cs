@@ -133,6 +133,7 @@ namespace ZATCA_V3.Controllers
                     });
                 }
 
+                string warning = "N/A";
                 var invoiceResponse = await _zatcaService.SendSimplifiedInvoiceToZATCA(companyCredentials, res, inv);
                 try
                 {
@@ -159,8 +160,8 @@ namespace ZATCA_V3.Controllers
                 {
                     if (invoiceResponse.StatusCode is 400 or 401)
                     {
-                        invoice.StatusCode = invoiceResponse.StatusCode;
-                        invoice.WarningMessage = invoiceResponse.WarningMessage;
+                        /*invoice.StatusCode = invoiceResponse.StatusCode;
+                        invoice.WarningMessage = invoiceResponse.WarningMessage;*/
                     }
                     else if (invoiceResponse.StatusCode == 500)
                     {
