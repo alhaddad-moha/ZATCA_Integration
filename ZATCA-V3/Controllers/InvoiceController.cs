@@ -51,6 +51,152 @@ namespace ZATCA_V3.Controllers
         }
 
 
+        [HttpPost("sign-single-simplified")]
+        public async Task<IActionResult> SignSingleSimplifiedInvoice(SingleInvoiceRequest singleInvoiceRequest)
+        {
+            try
+            {
+                var errors = new Dictionary<string, List<string>>();
+
+                var company = await _companyRepository.GetById(singleInvoiceRequest.CompanyId);
+                if (company == null)
+                {
+                    errors[nameof(singleInvoiceRequest.CompanyId)] = new List<string> { "Company Not Found" };
+                }
+
+                var companyCredentials =
+                    await _companyCredentialsRepository.GetLatestByCompanyId(singleInvoiceRequest.CompanyId);
+                if (companyCredentials == null)
+                {
+                    errors["Credentials"] = new List<string> { "Company Credentials Not Found" };
+                }
+
+                if (errors.Any())
+                {
+                    return new ApiResponse<object>(400, "Validation errors occurred.", null, errors);
+                }
+
+                var isInvoiceSigned = await _invoiceRepository.IsInvoiceSigned(singleInvoiceRequest.Invoice.Id,
+                    singleInvoiceRequest.CompanyId);
+
+                if (isInvoiceSigned)
+                {
+                    return new ApiResponse<object>(400, "Invoice already signed.");
+                }
+
+                var latestInvoice = await _invoiceRepository.GetLatestByCompanyId(singleInvoiceRequest.CompanyId);
+                UBLXML ubl = new UBLXML();
+
+                Invoice inv = InvoiceHelper.CreateMainInvoice(singleInvoiceRequest.InvoiceType,
+                    singleInvoiceRequest.Invoice, company!);
+                string invoiceHash = latestInvoice == null ? Constants.DefaultInvoiceHash : latestInvoice.Hash;
+
+                foreach (var invoiceItem in singleInvoiceRequest.Invoice.InvoiceItems)
+                {
+                    var invoiceLine = InvoiceHelper.CreateInvoiceLine(
+                        invoiceItem.Name, invoiceItem.Quantity, invoiceItem.BaseQuantity, invoiceItem.Price,
+                        inv.allowanceCharges,
+                        invoiceItem.TaxCategory, invoiceItem.VatPercentage, invoiceItem.IsIncludingVat,
+                        invoiceItem.TaxExemptionReasonCode,
+                        invoiceItem.TaxExemptionReason
+                    );
+                    inv.InvoiceLines.Add(invoiceLine);
+                }
+
+                inv.cSIDInfo.CertPem = companyCredentials!.Certificate;
+                inv.cSIDInfo.PrivateKey = companyCredentials.PrivateKey;
+                inv.AdditionalDocumentReferencePIH.EmbeddedDocumentBinaryObject = invoiceHash;
+
+                Result res = ubl.GenerateInvoiceXML(inv, Directory.GetCurrentDirectory());
+                DBInvoiceModel invoice = CreateInvoiceFromResult(res, company!, singleInvoiceRequest.Invoice.Id,
+                    singleInvoiceRequest.InvoiceType.Name);
+
+                if (!res.IsValid)
+                {
+                    invoice.StatusCode = 400;
+                    invoice.ErrorMessage = res.ErrorMessage;
+                    invoice.WarningMessage = res.WarningMessage;
+                    await _invoiceRepository.CreateOrUpdate(invoice);
+                    return BadRequest(res);
+                }
+
+
+                if (!singleInvoiceRequest.isSignAllowed)
+                {
+                    invoice.StatusCode = 0;
+                    await _invoiceRepository.CreateOrUpdate(invoice);
+
+                    return Ok(new
+                    {
+                        ZATCA = "",
+                        Res = ExtractInvoiceDetails(res)
+                    });
+                }
+
+                var invoiceResponse = await _zatcaService.SendSimplifiedInvoiceToZATCA(companyCredentials, res, inv);
+                try
+                {
+                    invoice.ZatcaResponse =
+                        JsonConvert.SerializeObject(invoiceResponse); // Serialize the response to JSON
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Error");
+                }
+
+                invoice.StatusCode = invoiceResponse.StatusCode;
+
+                if (invoiceResponse.IsSuccess)
+                {
+                    invoice.IsSigned = true;
+
+                    if (invoiceResponse.StatusCode == 202)
+                    {
+                        invoice.WarningMessage = invoiceResponse.WarningMessage;
+                    }
+                }
+                else
+                {
+                    if (invoiceResponse.StatusCode is 400 or 401)
+                    {
+                        invoice.StatusCode = invoiceResponse.StatusCode;
+                        invoice.WarningMessage = invoiceResponse.WarningMessage;
+                    }
+                    else if (invoiceResponse.StatusCode == 500)
+                    {
+                        invoice.StatusCode = 500;
+                        invoice.ErrorMessage = "Internal server error occurred." + invoiceResponse.ErrorMessage;
+                    }
+                    else
+                    {
+                        invoice.StatusCode = 500;
+                    }
+
+                    invoice.ErrorMessage = invoiceResponse.ErrorMessage ?? null;
+                }
+
+
+                await _invoiceRepository.CreateOrUpdate(invoice);
+
+                var response = new
+                {
+                    ZATCA = invoiceResponse,
+                    Res = ExtractInvoiceDetails(res)
+                };
+
+                return new ApiResponse<object>(201, "Invoices created successfully.", response);
+            }
+            catch (CustomValidationException ex)
+            {
+                return BadRequest(new { errors = ex.Errors });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (you might want to use a logging framework here)
+                return StatusCode(500, $"Internal server error: {ex.Message} {ex.StackTrace}");
+            }
+        }
+
         [HttpPost("sign-single")]
         public async Task<IActionResult> SignSingleInvoice(SingleInvoiceRequest singleInvoiceRequest)
         {

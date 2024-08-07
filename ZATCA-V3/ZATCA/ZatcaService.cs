@@ -49,6 +49,24 @@ namespace ZATCA_V3.ZATCA
             }
         }
 
+        public async Task<InvoiceReportingResponse> SendSimplifiedInvoiceToZATCA(CompanyCredentials companyCredentials,
+            Result res,
+            Invoice invoice)
+        {
+            Mode mode = Constants.DefaultMode;
+            ApiRequestLogic apiRequestLogic = new ApiRequestLogic(mode);
+            string invoiceType = invoice.invoiceTypeCode.Name;
+            InvoiceReportingRequest invRequestBody = new InvoiceReportingRequest
+            {
+                invoice = res.EncodedInvoice,
+                invoiceHash = res.InvoiceHash,
+                uuid = res.UUID
+            };
+
+            return await apiRequestLogic.CallReportingAPI(companyCredentials.SecretToken,
+                companyCredentials.Secret, invRequestBody);
+        }
+
         public async Task<IInvoiceResponse> ReSendInvoiceToZATCA(CompanyCredentials companyCredentials,
             InvoiceReportingRequest invRequestBody, string invoiceType)
         {
