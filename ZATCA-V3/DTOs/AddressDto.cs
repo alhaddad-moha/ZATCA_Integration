@@ -12,8 +12,7 @@ namespace ZATCA_V3.DTOs
         public string AdditionalStreetName { get; set; }
 
         [Required(ErrorMessage = "BuildingNumber is required.")]
-        [StringLength(4, ErrorMessage = "BuildingNumber must be 4 characters long.")]
-
+        [RegularExpression(@"^\d{4}$", ErrorMessage = "BuildingNumber must be a 4-digit number.")]
         public string BuildingNumber { get; set; }
 
 
@@ -30,6 +29,5 @@ namespace ZATCA_V3.DTOs
         public string CitySubdivisionName { get; set; }
 
         public string IdentificationCode { get; set; } = "SA";
-        
     }
 }
