@@ -53,6 +53,24 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Controllers\V2\" />
+    <Folder Include="Samples\" />
+    <Folder Include="Credentials\ConfigFiles\" />
+    <Folder Include="Credentials\CSR\" />
+    <Folder Include="Credentials\Keys\" />
+    <Folder Include="Invoices\Normal\Simplified\Credit\" />
+    <Folder Include="Invoices\Normal\Simplified\Debit\" />
+    <Folder Include="Invoices\Normal\Standard\Credit\" />
+    <Folder Include="Invoices\Normal\Standard\Debit\" />
+    <Folder Include="Invoices\Signed\Simplified\Credit\" />
+    <Folder Include="Invoices\Signed\Simplified\Debit\" />
+    <Folder Include="Invoices\Signed\Standard\Credit\" />
+    <Folder Include="Invoices\Signed\Standard\Debit\" />
+    <Folder Include="Invoices\Signed\Standard\Invoices\" />
+    <Folder Include="Samples\" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="itextsharp">
       <HintPath>libs\itextsharp.dll</HintPath>
     </Reference>

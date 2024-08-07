@@ -1,6 +1,6 @@
 ﻿{
   "profiles": {
-    "ZATCA_V2": {
+    "ZATCA_V3": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "swagger",
