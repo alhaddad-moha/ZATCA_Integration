@@ -135,10 +135,15 @@ namespace ZATCA_V3.Controllers
 
                 string warning = "N/A";
                 var invoiceResponse = await _zatcaService.SendSimplifiedInvoiceToZATCA(companyCredentials, res, inv);
+                return Ok(
+                    new
+                    {
+                        zatca = invoiceResponse
+                    });
                 try
                 {
-                    invoice.ZatcaResponse =
-                        JsonConvert.SerializeObject(invoiceResponse); // Serialize the response to JSON
+                    /*invoice.ZatcaResponse =
+                        JsonConvert.SerializeObject(invoiceResponse); */ // Serialize the response to JSON
                 }
                 catch (Exception e)
                 {
@@ -281,6 +286,11 @@ namespace ZATCA_V3.Controllers
                 }
 
                 var invoiceResponse = await _zatcaService.SendInvoiceToZATCA(companyCredentials, res, inv);
+                return Ok(
+                    new
+                    {
+                        zatca = invoiceResponse
+                    });
                 try
                 {
                     invoice.ZatcaResponse =
