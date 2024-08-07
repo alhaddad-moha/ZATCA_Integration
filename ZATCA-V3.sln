@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.34916.146
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZATCA-V3", "ZATCA-V3\ZATCA-V3.csproj", "{11DA429C-8A98-4FEB-B894-3A59978F3C1E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{11DA429C-8A98-4FEB-B894-3A59978F3C1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11DA429C-8A98-4FEB-B894-3A59978F3C1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11DA429C-8A98-4FEB-B894-3A59978F3C1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11DA429C-8A98-4FEB-B894-3A59978F3C1E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7004522C-3A5F-4CFE-ADFB-670ABD3EA6C6}
+	EndGlobalSection
+EndGlobal

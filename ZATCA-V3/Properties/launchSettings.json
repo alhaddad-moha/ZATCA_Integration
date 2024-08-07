@@ -1,0 +1,77 @@
+﻿{
+  "profiles": {
+    "ZATCA_V2": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DB_SERVER": "localhost",
+        "DB_NAME": "ZATCA_Development",
+        "DB_USER": "dev_user",
+        "DB_PASSWORD": "dev_password"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "https://localhost:7074;http://localhost:5074"
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DB_SERVER": "localhost",
+        "DB_NAME": "ZATCA_Development",
+        "DB_USER": "dev_user",
+        "DB_PASSWORD": "dev_password"
+      }
+    },
+    "Production": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production",
+        "DB_SERVER": "test1-production-db-server",
+        "DB_NAME": "ZATCA_Production1",
+        "DB_USER": "prod_user1",
+        "DB_PASSWORD": "prod_password1"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "https://localhost:7074;http://localhost:5074"
+    },
+    "Staging": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Staging",
+        "DB_SERVER": "your-staging-db-server",
+        "DB_NAME": "ZATCA_Staging",
+        "DB_USER": "stage_user",
+        "DB_PASSWORD": "stage_password"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "https://localhost:7074;http://localhost:5074"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
+      "environmentVariables": {
+        "ASPNETCORE_URLS": "https://+:443;http://+:80"
+      },
+      "publishAllPorts": true,
+      "useSSL": true
+    }
+  },
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:16958",
+      "sslPort": 44324
+    }
+  }
+}
