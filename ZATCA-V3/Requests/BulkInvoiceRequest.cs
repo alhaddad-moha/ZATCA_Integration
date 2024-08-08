@@ -66,7 +66,7 @@ public class InvoiceItem
     public decimal VatPercentage { get; set; }
 
     public bool IsIncludingVat { get; set; }
-    public string? TaxExemptionReasonCode { get; set; }
+    public string? TaxExemptionReasonCode { get; set; } = "VATEX-SA-HEA";
     public string? TaxExemptionReason { get; set; }
 }
 

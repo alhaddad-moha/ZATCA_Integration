@@ -22,7 +22,7 @@ namespace ZATCA_V3.DTOs
         [Required(ErrorMessage = "PostalZone is required.")]
         [RegularExpression(@"^\d{5}$", ErrorMessage = "PostalZone must be a 5-digit number.")]
         public string PostalZone { get; set; }
-
+        
         public string CountrySubentity { get; set; }
 
         [Required(ErrorMessage = "CitySubdivisionName is required.")]

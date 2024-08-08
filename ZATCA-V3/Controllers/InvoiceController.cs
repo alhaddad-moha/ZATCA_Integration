@@ -76,6 +76,7 @@ namespace ZATCA_V3.Controllers
                     return new ApiResponse<object>(400, "Validation errors occurred.", null, errors);
                 }
 
+
                 var isInvoiceSigned = await _invoiceRepository.IsInvoiceSigned(singleInvoiceRequest.Invoice.Id,
                     singleInvoiceRequest.CompanyId);
 
@@ -93,6 +94,17 @@ namespace ZATCA_V3.Controllers
 
                 foreach (var invoiceItem in singleInvoiceRequest.Invoice.InvoiceItems)
                 {
+                    if (!invoiceItem.TaxCategory.Contains('S'))
+                    {
+                        if (invoiceItem.TaxExemptionReason == null)
+                        {
+                            errors["TaxExemptionReason"] = new List<string>
+                                { "TaxExemptionReason must be included for Z, O, or E" };
+                            return new ApiResponse<object>(400, "Validation errors occurred.", null, errors);
+
+                        }
+                    }
+
                     var invoiceLine = InvoiceHelper.CreateInvoiceLine(
                         invoiceItem.Name, invoiceItem.Quantity, invoiceItem.BaseQuantity, invoiceItem.Price,
                         inv.allowanceCharges,
@@ -108,9 +120,10 @@ namespace ZATCA_V3.Controllers
                 inv.AdditionalDocumentReferencePIH.EmbeddedDocumentBinaryObject = invoiceHash;
 
                 Result res = ubl.GenerateInvoiceXML(inv, Directory.GetCurrentDirectory(), false);
+                
                 DBInvoiceModel invoice = CreateInvoiceFromResult(res, company!, singleInvoiceRequest.Invoice.Id,
                     singleInvoiceRequest.InvoiceType.Name);
-
+                
                 if (!res.IsValid)
                 {
                     invoice.StatusCode = 400;
